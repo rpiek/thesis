@@ -1,4 +1,4 @@
-package com.rowan.thesis.thesis_analysis.model.tree;
+package com.rowan.thesis.thesis_analysis.model.trace;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

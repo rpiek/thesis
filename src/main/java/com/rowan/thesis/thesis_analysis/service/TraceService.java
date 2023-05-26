@@ -1,9 +1,9 @@
 package com.rowan.thesis.thesis_analysis.service;
 
 import com.rowan.thesis.thesis_analysis.model.input.Span;
-import com.rowan.thesis.thesis_analysis.model.tree.Model;
-import com.rowan.thesis.thesis_analysis.model.tree.Node;
-import com.rowan.thesis.thesis_analysis.model.tree.Tree;
+import com.rowan.thesis.thesis_analysis.model.trace.Model;
+import com.rowan.thesis.thesis_analysis.model.trace.Node;
+import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +28,7 @@ public class TraceService {
     }
 
     public Model tracesToModel(List<List<Span>> traces) {
-        List<Tree> trees = new ArrayList<>();
+        List<Trace> trees = new ArrayList<>();
         readEndpointMap.clear();
         writeEndpointMap.clear();
         for (List<Span> spans : traces) {
@@ -38,7 +38,7 @@ public class TraceService {
         return new Model(trees);
     }
 
-    private Tree traceToTree(List<Span> spans) {
+    private Trace traceToTree(List<Span> spans) {
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
         spans.remove(beginSpan);
         mutateMap(beginSpan);
@@ -48,7 +48,7 @@ public class TraceService {
                 node.getEndpoint().equals(ModelConstants.DATABASE_NAME)
                 || !node.getName().equals(beginNode.getName()))).collect(Collectors.toList()));
 
-        return new Tree(beginNode);
+        return new Trace(beginNode);
     }
 
     private List<Node> traceToTreeRec(String id, List<Span> spans, Node parent) {

@@ -1,4 +1,4 @@
-package com.rowan.thesis.thesis_analysis.model.tree;
+package com.rowan.thesis.thesis_analysis.model.trace;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class Model {
 
-    private List<Tree> trees;
+    private List<Trace> traces;
 
 }
