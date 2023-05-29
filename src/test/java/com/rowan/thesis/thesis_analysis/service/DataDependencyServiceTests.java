@@ -50,8 +50,8 @@ public class DataDependencyServiceTests {
         Result expected = new Result(map, null, null, metrics);
 
 
-        when(traceService.getReadEndpointMap()).thenReturn(ExampleTraces.Get_example_get_trace_endpoint_map());
-        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_get_trace()))));
+        when(traceService.getReadEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
+        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace()))));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -61,12 +61,50 @@ public class DataDependencyServiceTests {
 
     @Test
     public void Test_get_data_depends_write() {
+        ArrayList<Metric> metrics = new ArrayList<>();
+        Metric metric1 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service1", "a", 0);
+        Metric metric2 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 1);
+        Metric metric3 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
+        metrics.add(metric1);
+        metrics.add(metric2);
+        metrics.add(metric3);
+        Map<String, Integer> map = new HashMap<>();
+        map.put("service1", 0);
+        map.put("service2", 1);
+        map.put("service3", 2);
+        Result expected = new Result(null, map, null, metrics);
 
+        when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
+        Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace()))));
+
+        Assertions.assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .isEqualTo(expected);
     }
 
     @Test
     public void Test_get_data_depends_need() {
+        ArrayList<Metric> metrics = new ArrayList<>();
+        Metric metric1 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service1", "a", 0);
+        Metric metric2 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service2", "x", 0);
+        Metric metric3 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service3", "y", 1);
+        metrics.add(metric1);
+        metrics.add(metric2);
+        metrics.add(metric3);
+        Map<String, Integer> map = new HashMap<>();
+        map.put("service1", 0);
+        map.put("service2", 0);
+        map.put("service3", 1);
+        Result expected = new Result(null, null, map, metrics);
 
+        when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
+        Result actual = dataDependencyService.getDataDependsNeedScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace()))));
+
+        Assertions.assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .isEqualTo(expected);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.rowan.thesis.thesis_analysis.service;
 
-import com.rowan.thesis.thesis_analysis.controller.DataDependencyController;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
 import com.rowan.thesis.thesis_analysis.model.metric.Metric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
@@ -54,20 +53,24 @@ public class DataDependencyService {
         return new Result(dataDependsReadMap, null, null, results);
     }
 
-    public void getDataDependsWriteScore(Model model) {
+    public Result getDataDependsWriteScore(Model model) {
         results.clear();
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
         for (String service : traceService.getWriteEndpointMap().keySet()) {
             dataDependsWriteMap.put(service, dataDependsWrite(service, model));
         }
+
+        return new Result(null, dataDependsWriteMap, null, results);
     }
 
-    public void getDataDependsNeedScore(Model model) {
+    public Result getDataDependsNeedScore(Model model) {
         results.clear();
         Map<String, Integer> dataDependsNeedMap = new HashMap<>();
         for (String service : traceService.getWriteEndpointMap().keySet()) {
-            dataDependsNeedMap.put(service, dataDependsRead(service, model));
+            dataDependsNeedMap.put(service, dataDependsNeed(service, model));
         }
+
+        return new Result(null, null, dataDependsNeedMap, results);
     }
 
     private int dataDependsRead(String serviceName, Model model) {
@@ -91,7 +94,7 @@ public class DataDependencyService {
     private int dataDependsNeed(String serviceName, Model model) {
         int result = 0;
         for (String path : traceService.getWriteEndpointMap().get(serviceName)) {
-            result += dataDependsWriteOnEndpoint(serviceName, path, model);
+            result += dataDependsNeedOnEndpoint(serviceName, path, model);
         }
 
         return result;
@@ -165,8 +168,11 @@ public class DataDependencyService {
                     longestPath(serviceName, serviceCallee, endpoint, trace.getNode(), methods, new ArrayList<>(), new ArrayList<>(), paths);
                     for (List<Node> path : paths) {
                         if (path.size() > 1) {
-                            value += (path.size() - 1) * intraDataDependency(path.get(path.size() - 1));
-                        }
+                            int intraDataDependencyValue = 0;
+                            for (int i = 0; i < path.size() - 1; i++) {
+                                intraDataDependencyValue += intraDataDependency(path.get(i));
+                            }
+                            value += intraDataDependencyValue;                        }
                     }
                 }
                 valuesPerService.add(value);

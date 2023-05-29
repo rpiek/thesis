@@ -13,7 +13,7 @@ import org.junit.Test;
 public class ExampleTraces {
 
 
-    public static Trace Get_example_get_trace() {
+    public static Trace Get_example_simple_get_trace() {
         Node rootNode = new Node(
                 "service1",
                 "a",
@@ -70,8 +70,66 @@ public class ExampleTraces {
         return new Trace(rootNode);
     }
 
+    public static Trace Get_example_simple_post_trace() {
+        Node rootNode = new Node(
+                "service1",
+                "a",
+                "POST",
+                1L,
+                new ArrayList<>()
+        );
+
+        Node rootChildNode1 = new Node(
+                "service2",
+                "x",
+                "POST",
+                2L,
+                new ArrayList<>()
+        );
+
+        Node rootChildNode1DatabaseNode = new Node(
+                "service2",
+                "database",
+                null,
+                3L,
+                new ArrayList<>()
+        );
+
+        Node rootChildNode1ChildNode = new Node(
+                "service3",
+                "y",
+                "POST",
+                3L,
+                new ArrayList<>()
+        );
+
+        Node rootChildNode1ChildNodeDatabaseNode = new Node(
+                "service3",
+                "database",
+                null,
+                4L,
+                new ArrayList<>()
+        );
+
+        ArrayList<Node> rootChildren = new ArrayList<>();
+        rootChildren.add(rootChildNode1);
+        rootNode.setChildren(rootChildren);
+
+        ArrayList<Node> rootChildChildren = new ArrayList<>();
+        rootChildChildren.add(rootChildNode1ChildNode);
+        rootChildChildren.add(rootChildNode1DatabaseNode);
+        rootChildNode1.setChildren(rootChildChildren);
+
+        ArrayList<Node> rootChildChildChildren = new ArrayList<>();
+        rootChildChildChildren.add(rootChildNode1ChildNodeDatabaseNode);
+        rootChildNode1ChildNode.setChildren(rootChildChildChildren);
+
+        return new Trace(rootNode);
+    }
+
+
     @Test
-    public static Map<String, Set<String>> Get_example_get_trace_endpoint_map() {
+    public static Map<String, Set<String>> Get_example_simple_trace_endpoint_map() {
         Map<String, Set<String>> map = new HashMap<>();
 
         map.put("service1", new HashSet<>(Collections.singleton("a")));
