@@ -7,13 +7,18 @@ import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
+@Service
+@Slf4j
 public class TraceService {
 
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
@@ -43,7 +48,7 @@ public class TraceService {
         spans.remove(beginSpan);
         mutateMap(beginSpan);
         Node beginNode = spanToNode(beginSpan);
-        beginNode.setChildren(traceToTreeRec(beginSpan.getSpanId(), spans, beginNode));
+        beginNode.setChildren(traceToTreeRec(beginSpan.getSpanId(), spans));
         beginNode.setChildren(beginNode.getChildren().stream().filter(node -> (
                 node.getEndpoint().equals(ModelConstants.DATABASE_NAME)
                 || !node.getName().equals(beginNode.getName()))).collect(Collectors.toList()));
@@ -51,7 +56,7 @@ public class TraceService {
         return new Trace(beginNode);
     }
 
-    private List<Node> traceToTreeRec(String id, List<Span> spans, Node parent) {
+    private List<Node> traceToTreeRec(String id, List<Span> spans) {
         if (spans.isEmpty()) {
             return null;
         }
@@ -66,9 +71,14 @@ public class TraceService {
                     span.getLocalEndpoint().getServiceName(),
                     span.getPath(),
                     span.getTags().getMethod(),
-                    null,
-                    parent);
-            node.setChildren(traceToTreeRec(span.getSpanId(), spans, node));
+                    span.getTimeStamp(),
+                    null);
+            List<Node> children = traceToTreeRec(span.getSpanId(), spans);
+            if (children != null && children.size() >= 1) {
+                children.sort(Comparator.comparing(Node::getTimeStamp));
+            }
+            node.setChildren(children);
+
             nodes.add(node);
         }
 
@@ -100,7 +110,7 @@ public class TraceService {
                 span.getLocalEndpoint().getServiceName(),
                 span.getPath(),
                 span.getTags().getMethod(),
-                null,
+                span.getTimeStamp(),
                 null
         );
     }

@@ -1,9 +1,12 @@
 package com.rowan.thesis.thesis_analysis.model.input;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Span {
 
     @JsonProperty("traceId")
@@ -23,6 +26,9 @@ public class Span {
 
     @JsonProperty("localEndpoint")
     LocalEndpoint localEndpoint;
+
+    @JsonProperty("timestamp")
+    Long timeStamp;
 
 //    @JsonProperty("start_time")
 //    ZonedDateTime startTime;

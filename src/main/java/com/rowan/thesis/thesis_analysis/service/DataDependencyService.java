@@ -1,9 +1,10 @@
 package com.rowan.thesis.thesis_analysis.service;
 
+import com.rowan.thesis.thesis_analysis.controller.DataDependencyController;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
 import com.rowan.thesis.thesis_analysis.model.metric.Metric;
+import com.rowan.thesis.thesis_analysis.model.metric.Result;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
-import com.rowan.thesis.thesis_analysis.model.input.Span;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
 import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
@@ -23,19 +24,50 @@ public class DataDependencyService {
 
     ArrayList<Metric> results = new ArrayList<>();
 
-    TraceService traceService = new TraceService();
+    private final TraceService traceService;
 
-    public void getDataAutonomyScore(List<List<Span>> traces) {
-        Model model = traceService.tracesToModel(traces);
+    public DataDependencyService(TraceService traceService) {
+        this.traceService = traceService;
+    }
+
+    public void getDataAutonomyScore(Model model) {
+        results.clear();
         Map<String, Integer> dataDependsReadMap = new HashMap<>();
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        for (String service :traceService.getReadEndpointMap().keySet()) {
+        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
+        for (String service : traceService.getReadEndpointMap().keySet()) {
             dataDependsReadMap.put(service, dataDependsRead(service, model));
         }
         for (String service : traceService.getWriteEndpointMap().keySet()) {
             dataDependsWriteMap.put(service, dataDependsWrite(service, model));
+            dataDependsNeedMap.put(service, dataDependsNeed(service, model));
         }
         log.info("EOP");
+    }
+
+    public Result getDataDependsReadScore(Model model) {
+        results.clear();
+        Map<String, Integer> dataDependsReadMap = new HashMap<>();
+        for (String service : traceService.getReadEndpointMap().keySet()) {
+            dataDependsReadMap.put(service, dataDependsRead(service, model));
+        }
+        return new Result(dataDependsReadMap, null, null, results);
+    }
+
+    public void getDataDependsWriteScore(Model model) {
+        results.clear();
+        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
+        for (String service : traceService.getWriteEndpointMap().keySet()) {
+            dataDependsWriteMap.put(service, dataDependsWrite(service, model));
+        }
+    }
+
+    public void getDataDependsNeedScore(Model model) {
+        results.clear();
+        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
+        for (String service : traceService.getWriteEndpointMap().keySet()) {
+            dataDependsNeedMap.put(service, dataDependsRead(service, model));
+        }
     }
 
     private int dataDependsRead(String serviceName, Model model) {
