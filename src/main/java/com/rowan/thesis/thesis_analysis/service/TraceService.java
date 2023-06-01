@@ -47,7 +47,13 @@ public class TraceService {
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
         spans.remove(beginSpan);
         mutateMap(beginSpan);
-        Node beginNode = spanToNode(beginSpan);
+        Node beginNode = new Node(
+                beginSpan.getLocalEndpoint().getServiceName(),
+                beginSpan.getPath(),
+                ModelConstants.ROOT_METHOD_STRING,
+                beginSpan.getTimeStamp(),
+                null
+        );
         beginNode.setChildren(traceToTreeRec(beginSpan.getSpanId(), spans));
         beginNode.setChildren(beginNode.getChildren().stream().filter(node -> (
                 node.getEndpoint().equals(ModelConstants.DATABASE_NAME)
@@ -103,16 +109,6 @@ public class TraceService {
         } else {
             readEndpointMap.put(serviceName, new HashSet<>(Collections.singleton(span.getPath())));
         }
-    }
-
-    private Node spanToNode(Span span) {
-        return new Node(
-                span.getLocalEndpoint().getServiceName(),
-                span.getPath(),
-                span.getTags().getMethod(),
-                span.getTimeStamp(),
-                null
-        );
     }
 
 }

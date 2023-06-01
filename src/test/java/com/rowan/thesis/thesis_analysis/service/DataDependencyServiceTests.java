@@ -14,13 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
@@ -32,7 +29,6 @@ public class DataDependencyServiceTests {
 
     @InjectMocks
     private DataDependencyService dataDependencyService;
-
 
     @Test
     public void Test_get_data_depends_read() {
@@ -100,6 +96,49 @@ public class DataDependencyServiceTests {
 
         when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
         Result actual = dataDependencyService.getDataDependsNeedScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace()))));
+
+        Assertions.assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .isEqualTo(expected);
+    }
+
+    @Test
+    public void Test_get_data_depends() {
+        ArrayList<Metric> metrics = new ArrayList<>();
+        Metric dataDependsReadMetric1 = new Metric(DataDependsType.DATA_DEPENDS_READ, "service1", "a", 0);
+        Metric dataDependsReadMetric4 = new Metric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", 1);
+        Metric dataDependsWriteMetric2 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 2);
+        Metric dataDependsWriteMetric3 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
+        Metric dataDependsNeedMetric2 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service2", "x", 1);
+        Metric dataDependsNeedMetric3 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service3", "y", 3);
+        metrics.add(dataDependsReadMetric1);
+        metrics.add(dataDependsReadMetric4);
+        metrics.add(dataDependsWriteMetric2);
+        metrics.add(dataDependsWriteMetric3);
+        metrics.add(dataDependsNeedMetric2);
+        metrics.add(dataDependsNeedMetric3);
+        Map<String, Integer> dataDependsReadMap = new HashMap<>();
+        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
+        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
+        dataDependsReadMap.put("service1", 0);
+        dataDependsReadMap.put("service2", 0);
+        dataDependsReadMap.put("service3", 0);
+        dataDependsReadMap.put("service4", 1);
+        dataDependsWriteMap.put("service1", 0);
+        dataDependsWriteMap.put("service2", 2);
+        dataDependsWriteMap.put("service3", 2);
+        dataDependsWriteMap.put("service4", 0);
+        dataDependsNeedMap.put("service1", 0);
+        dataDependsNeedMap.put("service2", 1);
+        dataDependsNeedMap.put("service3", 3);
+        dataDependsNeedMap.put("service4", 0);
+
+        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsNeedMap, metrics);
+
+        when(traceService.getReadEndpointMap()).thenReturn(ExampleTraces.Get_example_complex_trace_read_endpoint_map());
+        when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_complex_trace_write_endpoint_map());
+        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_trace()))));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()

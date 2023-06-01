@@ -6,6 +6,7 @@ import com.rowan.thesis.thesis_analysis.model.input.Span;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
 import com.rowan.thesis.thesis_analysis.model.trace.Trace;
+import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +39,7 @@ public class TraceServiceTests {
         Node rootNode = new Node(
             "ts-travel-service",
             "get /api/v1/travelservice/routes/{tripid}",
-            "GET",
+                ModelConstants.ROOT_METHOD_STRING,
                 1684139555535039L,
             new ArrayList<>()
         );
