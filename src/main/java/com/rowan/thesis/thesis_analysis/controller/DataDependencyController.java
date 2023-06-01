@@ -6,7 +6,6 @@ import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.service.DataDependencyService;
 import com.rowan.thesis.thesis_analysis.service.TraceService;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController()
-@Slf4j
+@RestController
 @RequestMapping("/data-dependency")
 public class DataDependencyController {
 
@@ -28,6 +26,7 @@ public class DataDependencyController {
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -35,6 +34,7 @@ public class DataDependencyController {
     public @ResponseBody ResponseEntity<Result> calculateDataDependendsRead(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -42,13 +42,7 @@ public class DataDependencyController {
     public @ResponseBody ResponseEntity<Result> calculateDataDependendsWrite(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
 
-    @PostMapping("/analyze/DataDependsNeed")
-    public @ResponseBody ResponseEntity<Result> calculateDataDependendsNeed(@RequestBody List<List<Span>> traces) {
-        Model model = traceService.tracesToModel(traces);
-        Result result = dataDependencyService.getDataDependsScore(model);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

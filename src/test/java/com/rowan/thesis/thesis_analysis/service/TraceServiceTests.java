@@ -10,7 +10,10 @@ import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +28,8 @@ public class TraceServiceTests {
     @Test
     public void Convert_input_to_trace() throws IOException {
         ClassPathResource resource = new ClassPathResource("/TraceServiceTests/example_traces_1.json");
-        List<List<Span>> input = objectMapper.readValue(resource.getInputStream(), new TypeReference<List<List<Span>>>() {});
+        List<List<Span>> input = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {
+        });
         Model expected = new Model(new ArrayList<>(Collections.singleton(getTrace())));
 
         Model actual = traceService.tracesToModel(input);
@@ -55,7 +59,7 @@ public class TraceServiceTests {
         Node rootChildNode2 = new Node(
                 "ts-route-service",
                 "get /api/v1/routeservice/routes/{routeid}",
-                "GET",
+                ModelConstants.GET_STRING,
                 1684139555542078L,
                 new ArrayList<>()
         );

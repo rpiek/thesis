@@ -4,6 +4,5 @@ public enum DataDependsType {
 
     DATA_DEPENDS_READ,
     DATA_DEPENDS_WRITE,
-    DATA_DEPENDS_NEED
 
 }

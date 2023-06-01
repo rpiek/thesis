@@ -14,11 +14,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class DataDependencyService {
 
     ArrayList<Metric> results = new ArrayList<>();
@@ -34,16 +33,6 @@ public class DataDependencyService {
         setLocalState();
         Map<String, Integer> dataDependsReadMap = new HashMap<>();
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
-
-//        for (String service : traceService.getReadEndpointMap().keySet()) {
-//            dataDependsReadMap.put(service, dataDependsRead(service, model));
-//        }
-//
-//        for (String service : traceService.getWriteEndpointMap().keySet()) {
-//            dataDependsWriteMap.put(service, dataDependsWrite(service, model));
-//            dataDependsNeedMap.put(service, dataDependsNeed(service, model));
-//        }
 
         for (String service : services) {
             if (traceService.getReadEndpointMap().containsKey(service)) {
@@ -53,14 +42,12 @@ public class DataDependencyService {
             }
             if (traceService.getWriteEndpointMap().containsKey(service)) {
                 dataDependsWriteMap.put(service, dataDependsWrite(service, model));
-                dataDependsNeedMap.put(service, dataDependsNeed(service, model));
             } else {
                 dataDependsWriteMap.put(service, 0);
-                dataDependsNeedMap.put(service, 0);
             }
         }
 
-        return new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsNeedMap, results);
+        return new Result(dataDependsReadMap, dataDependsWriteMap, results);
     }
 
     public Result getDataDependsReadScore(Model model) {
@@ -69,7 +56,7 @@ public class DataDependencyService {
         for (String service : traceService.getReadEndpointMap().keySet()) {
             dataDependsReadMap.put(service, dataDependsRead(service, model));
         }
-        return new Result(dataDependsReadMap, null, null, results);
+        return new Result(dataDependsReadMap, null, results);
     }
 
     public Result getDataDependsWriteScore(Model model) {
@@ -79,17 +66,7 @@ public class DataDependencyService {
             dataDependsWriteMap.put(service, dataDependsWrite(service, model));
         }
 
-        return new Result(null, dataDependsWriteMap, null, results);
-    }
-
-    public Result getDataDependsNeedScore(Model model) {
-        setLocalState();
-        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
-        for (String service : traceService.getWriteEndpointMap().keySet()) {
-            dataDependsNeedMap.put(service, dataDependsNeed(service, model));
-        }
-
-        return new Result(null, null, dataDependsNeedMap, results);
+        return new Result(null, dataDependsWriteMap, results);
     }
 
     private int dataDependsRead(String serviceName, Model model) {
@@ -110,15 +87,6 @@ public class DataDependencyService {
         return result;
     }
 
-    private int dataDependsNeed(String serviceName, Model model) {
-        int result = 0;
-        for (String path : traceService.getWriteEndpointMap().get(serviceName)) {
-            result += dataDependsNeedOnEndpoint(serviceName, path, model);
-        }
-
-        return result;
-    }
-
     private int dataDependsReadOnEndpoint(String serviceName, String endpoint, Model model) {
         ArrayList<Integer> valuesPerService = new ArrayList<>();
         Set<String> methods = new HashSet<>(Collections.singleton(ModelConstants.GET_STRING));
@@ -130,7 +98,7 @@ public class DataDependencyService {
         int result = euclidianNorm(valuesPerService);
         results.add(new Metric(DataDependsType.DATA_DEPENDS_READ, serviceName, endpoint, result));
 
-        return  result;
+        return result;
     }
 
     private int dataDependsWriteOnEndpoint(String serviceName, String endpoint, Model model) {
@@ -146,7 +114,7 @@ public class DataDependencyService {
         int result = euclidianNorm(valuesPerService);
         results.add(new Metric(DataDependsType.DATA_DEPENDS_WRITE, serviceName, endpoint, result));
 
-        return  result;
+        return result;
     }
 
     private void reachableReadsOrWrites(String serviceName, String endpoint, Model model, ArrayList<Integer> valuesPerService, Set<String> methods, String serviceCallee) {
@@ -154,47 +122,20 @@ public class DataDependencyService {
             int value = 0;
             for (Trace trace : model.getTraces()) {
                 List<List<Node>> paths = new ArrayList<>();
-                longestPath(serviceName, serviceCallee, endpoint, trace.getNode(), methods, new ArrayList<>(), new ArrayList<>(), paths);
+                longestPaths(serviceName, serviceCallee, endpoint, trace.getNode(), methods, new ArrayList<>(), new ArrayList<>(), paths);
                 for (List<Node> path : paths) {
-                    if (path.size() > 1) {
-                        value += (path.size() - 1) * intraDataDependency(path.get(path.size() - 1));
+                    // Retrieve the node for which we want to calculate the data dependency
+                    Node targetNode = path.get(path.size() - 1);
+                    path.remove(path.size() - 1);
+                    // Filter out all vertices which equal the service for which we want to measure the dependency
+                    path = path.stream().filter(node -> !node.getName().equals(serviceName)).collect(Collectors.toList());
+                    if (!path.isEmpty()) {
+                        value += path.size() * intraDataDependency(targetNode);
                     }
                 }
             }
             valuesPerService.add(value);
         }
-    }
-
-    private int dataDependsNeedOnEndpoint(String serviceName, String endpoint, Model model) {
-        ArrayList<Integer> valuesPerService = new ArrayList<>();
-        Set<String> methods = new HashSet<>();
-        methods.add(ModelConstants.POST_STRING);
-        methods.add(ModelConstants.PUT_STRING);
-
-        for (String serviceCallee : services) {
-            if (!serviceCallee.equals(serviceName)) {
-                int value = 0;
-                for (Trace trace : model.getTraces()) {
-                    List<List<Node>> paths = new ArrayList<>();
-                    longestPath(serviceName, serviceCallee, endpoint, trace.getNode(), methods, new ArrayList<>(), new ArrayList<>(), paths);
-                    for (List<Node> path : paths) {
-                        if (path.size() > 1) {
-                            int intraDataDependencyValue = 0;
-                            for (int i = 0; i < path.size() - 1; i++) {
-                                intraDataDependencyValue += intraDataDependency(path.get(i));
-                            }
-                            value += intraDataDependencyValue;
-                        }
-                    }
-                }
-                valuesPerService.add(value);
-            }
-        }
-
-        int result = euclidianNorm(valuesPerService);
-        results.add(new Metric(DataDependsType.DATA_DEPENDS_NEED, serviceName, endpoint, result));
-
-        return  result;
     }
 
     private int euclidianNorm(ArrayList<Integer> values) {
@@ -207,17 +148,13 @@ public class DataDependencyService {
         return (int) Math.sqrt(sum);
     }
 
-    private void longestPath(String target, String source, String endpoint, Node node,
-                             Set<String> methods, List<Node> currentPath, List<Node> longestPath, List<List<Node>> result) {
+    private void longestPaths(String target, String source, String endpoint, Node node, Set<String> methods, List<Node> currentPath, List<Node> longestPath, List<List<Node>> result) {
 
-        if (node.getMethod() != null && (node.getMethod().equals(ModelConstants.ROOT_METHOD_STRING) ||
-                                         methods.contains(node.getMethod().toLowerCase()))) {
+        if (node.getMethod() != null && (node.getMethod().equals(ModelConstants.ROOT_METHOD_STRING) || methods.contains(node.getMethod()))) {
             currentPath.add(node);
         }
 
-        if (node.getName().equals(target) && node.getEndpoint().equals(endpoint)
-            && currentPath.size() >= 2
-            && currentPath.get(currentPath.size() - 2).getName().equals(source)) {
+        if (node.getName().equals(target) && node.getEndpoint().equals(endpoint) && currentPath.size() >= 2 && currentPath.get(currentPath.size() - 2).getName().equals(source)) {
             longestPath.clear();
             longestPath.addAll(currentPath);
             result.add(longestPath);
@@ -225,7 +162,7 @@ public class DataDependencyService {
 
         for (Node childNode : node.getChildren()) {
             if (!childNode.getName().equals(ModelConstants.DATABASE_NAME) || !methods.contains(childNode.getMethod())) {
-                longestPath(target, source, endpoint, childNode, methods, currentPath, longestPath, result);
+                longestPaths(target, source, endpoint, childNode, methods, currentPath, longestPath, result);
             }
         }
 

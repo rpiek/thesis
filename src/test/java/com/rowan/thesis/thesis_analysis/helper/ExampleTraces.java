@@ -17,7 +17,7 @@ public class ExampleTraces {
         Node rootNode = new Node(
                 "service1",
                 "a",
-                "GET",
+                ModelConstants.GET_STRING,
                 1L,
                 new ArrayList<>()
         );
@@ -25,14 +25,14 @@ public class ExampleTraces {
         Node rootChildNode1 = new Node(
                 "service2",
                 "x",
-                "GET",
+                ModelConstants.GET_STRING,
                 2L,
                 new ArrayList<>()
         );
 
         Node rootChildNode1DatabaseNode = new Node(
                 "service2",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 3L,
                 new ArrayList<>()
@@ -41,14 +41,14 @@ public class ExampleTraces {
         Node rootChildNode1ChildNode = new Node(
                 "service3",
                 "y",
-                "GET",
+                ModelConstants.GET_STRING,
                 3L,
                 new ArrayList<>()
         );
 
         Node rootChildNode1ChildNodeDatabaseNode = new Node(
                 "service3",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 4L,
                 new ArrayList<>()
@@ -82,14 +82,14 @@ public class ExampleTraces {
         Node rootChildNode1 = new Node(
                 "service2",
                 "x",
-                "POST",
+                ModelConstants.POST_STRING,
                 2L,
                 new ArrayList<>()
         );
 
         Node rootChildNode1DatabaseNode = new Node(
                 "service2",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 3L,
                 new ArrayList<>()
@@ -98,14 +98,14 @@ public class ExampleTraces {
         Node rootChildNode1ChildNode = new Node(
                 "service3",
                 "y",
-                "POST",
+                ModelConstants.POST_STRING,
                 3L,
                 new ArrayList<>()
         );
 
         Node rootChildNode1ChildNodeDatabaseNode = new Node(
                 "service3",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 4L,
                 new ArrayList<>()
@@ -150,14 +150,14 @@ public class ExampleTraces {
         Node node2 = new Node(
                 "service2",
                 "x",
-                "POST",
+                ModelConstants.POST_STRING,
                 2L,
                 new ArrayList<>()
         );
 
         Node rootNodeDatabaseNode = new Node(
                 "service1",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 1L,
                 new ArrayList<>()
@@ -165,7 +165,7 @@ public class ExampleTraces {
 
         Node node2DatabaseNode = new Node(
                 "service2",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 3L,
                 new ArrayList<>()
@@ -173,7 +173,7 @@ public class ExampleTraces {
 
         Node node2DatabaseNode2 = new Node(
                 "service2",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 3L,
                 new ArrayList<>()
@@ -182,14 +182,14 @@ public class ExampleTraces {
         Node node3 = new Node(
                 "service3",
                 "y",
-                "PUT",
+                ModelConstants.PUT_STRING,
                 3L,
                 new ArrayList<>()
         );
 
         Node node3DatabaseNode = new Node(
                 "service3",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 4L,
                 new ArrayList<>()
@@ -198,14 +198,14 @@ public class ExampleTraces {
         Node node4 = new Node(
                 "service4",
                 "z",
-                "GET",
+                ModelConstants.GET_STRING,
                 5L,
                 new ArrayList<>()
         );
 
         Node node4DatabaseNode = new Node(
                 "service4",
-                "database",
+                ModelConstants.DATABASE_NAME,
                 null,
                 6L,
                 new ArrayList<>()

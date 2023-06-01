@@ -12,7 +12,6 @@ public class Node {
     private String endpoint;
     private String method;
     private Long timeStamp;
-
     private List<Node> children;
 
 }

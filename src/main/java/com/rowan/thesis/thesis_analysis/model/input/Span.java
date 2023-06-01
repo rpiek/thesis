@@ -30,15 +30,6 @@ public class Span {
     @JsonProperty("timestamp")
     Long timeStamp;
 
-//    @JsonProperty("start_time")
-//    ZonedDateTime startTime;
-//
-//    @JsonProperty("end_time")
-//    ZonedDateTime endTime;
-
-//    @JsonProperty("status_code")
-//    StatusCode statusCode;
-
     @JsonProperty("tags")
     Tags tags;
 

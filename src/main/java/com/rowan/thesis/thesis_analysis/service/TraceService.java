@@ -14,11 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class TraceService {
 
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
@@ -47,22 +45,15 @@ public class TraceService {
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
         spans.remove(beginSpan);
         mutateMap(beginSpan);
-        Node beginNode = new Node(
-                beginSpan.getLocalEndpoint().getServiceName(),
-                beginSpan.getPath(),
-                ModelConstants.ROOT_METHOD_STRING,
-                beginSpan.getTimeStamp(),
-                null
-        );
-        beginNode.setChildren(traceToTreeRec(beginSpan.getSpanId(), spans));
-        beginNode.setChildren(beginNode.getChildren().stream().filter(node -> (
-                node.getEndpoint().equals(ModelConstants.DATABASE_NAME)
-                || !node.getName().equals(beginNode.getName()))).collect(Collectors.toList()));
+        Node beginNode = spanToNode(beginSpan);
+        beginNode.setMethod(ModelConstants.ROOT_METHOD_STRING);
+        beginNode.setChildren(traceToTreeRecursive(beginSpan.getSpanId(), spans));
+        beginNode.setChildren(beginNode.getChildren().stream().filter(node -> (node.getEndpoint().equals(ModelConstants.DATABASE_NAME) || !node.getName().equals(beginNode.getName()))).collect(Collectors.toList()));
 
         return new Trace(beginNode);
     }
 
-    private List<Node> traceToTreeRec(String id, List<Span> spans) {
+    private List<Node> traceToTreeRecursive(String id, List<Span> spans) {
         if (spans.isEmpty()) {
             return null;
         }
@@ -70,16 +61,11 @@ public class TraceService {
         List<Span> childSpans = spans.stream().filter(span -> span.getParentId().equals(id)).toList();
         List<Node> nodes = new ArrayList<>();
         for (Span span : childSpans) {
-            if (span.getKind() == null || !span.getKind().equals("CLIENT")) {
+            if (span.getKind() != null && !span.getKind().equals("CLIENT")) {
                 mutateMap(span);
             }
-            Node node = new Node(
-                    span.getLocalEndpoint().getServiceName(),
-                    span.getPath(),
-                    span.getTags().getMethod(),
-                    span.getTimeStamp(),
-                    null);
-            List<Node> children = traceToTreeRec(span.getSpanId(), spans);
+            Node node = spanToNode(span);
+            List<Node> children = traceToTreeRecursive(span.getSpanId(), spans);
             if (children != null && children.size() >= 1) {
                 children.sort(Comparator.comparing(Node::getTimeStamp));
             }
@@ -92,12 +78,14 @@ public class TraceService {
     }
 
     private void mutateMap(Span span) {
-        String serviceName = span.getLocalEndpoint().getServiceName();
-        String[] strings = span.getPath().split(" ");
-        if (strings[0].equals(ModelConstants.GET_STRING)) {
-            fillMap(span, serviceName, readEndpointMap);
-        } else if (strings[0].equals(ModelConstants.POST_STRING) || strings[0].equals(ModelConstants.PUT_STRING)) {
-            fillMap(span, serviceName, writeEndpointMap);
+        if (span.getTags().getMethod() != null) {
+            String serviceName = span.getLocalEndpoint().getServiceName();
+            String method = span.getTags().getMethod();
+            if (method.equals(ModelConstants.GET_STRING)) {
+                fillMap(span, serviceName, readEndpointMap);
+            } else if (method.equals(ModelConstants.POST_STRING) || method.equals(ModelConstants.PUT_STRING)) {
+                fillMap(span, serviceName, writeEndpointMap);
+            }
         }
     }
 
@@ -109,6 +97,10 @@ public class TraceService {
         } else {
             readEndpointMap.put(serviceName, new HashSet<>(Collections.singleton(span.getPath())));
         }
+    }
+
+    private Node spanToNode(Span span) {
+        return new Node(span.getLocalEndpoint().getServiceName(), span.getPath(), span.getTags().getMethod(), span.getTimeStamp(), null);
     }
 
 }

@@ -43,7 +43,7 @@ public class DataDependencyServiceTests {
         map.put("service1", 0);
         map.put("service2", 1);
         map.put("service3", 2);
-        Result expected = new Result(map, null, null, metrics);
+        Result expected = new Result(map, null, metrics);
 
 
         when(traceService.getReadEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
@@ -68,34 +68,10 @@ public class DataDependencyServiceTests {
         map.put("service1", 0);
         map.put("service2", 1);
         map.put("service3", 2);
-        Result expected = new Result(null, map, null, metrics);
+        Result expected = new Result(null, map, metrics);
 
         when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
         Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace()))));
-
-        Assertions.assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringCollectionOrder()
-                .isEqualTo(expected);
-    }
-
-    @Test
-    public void Test_get_data_depends_need() {
-        ArrayList<Metric> metrics = new ArrayList<>();
-        Metric metric1 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service1", "a", 0);
-        Metric metric2 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service2", "x", 0);
-        Metric metric3 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service3", "y", 1);
-        metrics.add(metric1);
-        metrics.add(metric2);
-        metrics.add(metric3);
-        Map<String, Integer> map = new HashMap<>();
-        map.put("service1", 0);
-        map.put("service2", 0);
-        map.put("service3", 1);
-        Result expected = new Result(null, null, map, metrics);
-
-        when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_simple_trace_endpoint_map());
-        Result actual = dataDependencyService.getDataDependsNeedScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace()))));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -110,17 +86,12 @@ public class DataDependencyServiceTests {
         Metric dataDependsReadMetric4 = new Metric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", 1);
         Metric dataDependsWriteMetric2 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 2);
         Metric dataDependsWriteMetric3 = new Metric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
-        Metric dataDependsNeedMetric2 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service2", "x", 1);
-        Metric dataDependsNeedMetric3 = new Metric(DataDependsType.DATA_DEPENDS_NEED, "service3", "y", 3);
         metrics.add(dataDependsReadMetric1);
         metrics.add(dataDependsReadMetric4);
         metrics.add(dataDependsWriteMetric2);
         metrics.add(dataDependsWriteMetric3);
-        metrics.add(dataDependsNeedMetric2);
-        metrics.add(dataDependsNeedMetric3);
         Map<String, Integer> dataDependsReadMap = new HashMap<>();
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        Map<String, Integer> dataDependsNeedMap = new HashMap<>();
         dataDependsReadMap.put("service1", 0);
         dataDependsReadMap.put("service2", 0);
         dataDependsReadMap.put("service3", 0);
@@ -129,12 +100,8 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service2", 2);
         dataDependsWriteMap.put("service3", 2);
         dataDependsWriteMap.put("service4", 0);
-        dataDependsNeedMap.put("service1", 0);
-        dataDependsNeedMap.put("service2", 1);
-        dataDependsNeedMap.put("service3", 3);
-        dataDependsNeedMap.put("service4", 0);
 
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsNeedMap, metrics);
+        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, metrics);
 
         when(traceService.getReadEndpointMap()).thenReturn(ExampleTraces.Get_example_complex_trace_read_endpoint_map());
         when(traceService.getWriteEndpointMap()).thenReturn(ExampleTraces.Get_example_complex_trace_write_endpoint_map());
