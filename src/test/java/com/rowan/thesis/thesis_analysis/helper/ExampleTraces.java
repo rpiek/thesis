@@ -1,7 +1,6 @@
 package com.rowan.thesis.thesis_analysis.helper;
 
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
-import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,12 +12,11 @@ import java.util.Set;
 public class ExampleTraces {
 
 
-    public static Trace Get_example_simple_get_trace() {
+    public static Node Get_example_simple_get_trace() {
         Node rootNode = new Node(
                 "service1",
                 "a",
                 ModelConstants.GET_STRING,
-                1L,
                 new ArrayList<>()
         );
 
@@ -26,7 +24,6 @@ public class ExampleTraces {
                 "service2",
                 "x",
                 ModelConstants.GET_STRING,
-                2L,
                 new ArrayList<>()
         );
 
@@ -34,7 +31,6 @@ public class ExampleTraces {
                 "service2",
                 ModelConstants.DATABASE_NAME,
                 null,
-                3L,
                 new ArrayList<>()
         );
 
@@ -42,7 +38,6 @@ public class ExampleTraces {
                 "service3",
                 "y",
                 ModelConstants.GET_STRING,
-                3L,
                 new ArrayList<>()
         );
 
@@ -50,32 +45,26 @@ public class ExampleTraces {
                 "service3",
                 ModelConstants.DATABASE_NAME,
                 null,
-                4L,
                 new ArrayList<>()
         );
 
-        ArrayList<Node> rootChildren = new ArrayList<>();
-        rootChildren.add(rootChildNode1);
-        rootNode.setChildren(rootChildren);
+        rootNode.addChild(rootChildNode1);
 
-        ArrayList<Node> rootChildChildren = new ArrayList<>();
-        rootChildChildren.add(rootChildNode1ChildNode);
-        rootChildChildren.add(rootChildNode1DatabaseNode);
-        rootChildNode1.setChildren(rootChildChildren);
+        rootChildNode1.addChild(rootChildNode1ChildNode);
+        rootChildNode1.addChild(rootChildNode1DatabaseNode);
 
         ArrayList<Node> rootChildChildChildren = new ArrayList<>();
         rootChildChildChildren.add(rootChildNode1ChildNodeDatabaseNode);
         rootChildNode1ChildNode.setChildren(rootChildChildChildren);
 
-        return new Trace(rootNode);
+        return rootNode;
     }
 
-    public static Trace Get_example_simple_post_trace() {
+    public static Node Get_example_simple_post_trace() {
         Node rootNode = new Node(
                 "service1",
                 "a",
                 ModelConstants.ROOT_METHOD_STRING,
-                1L,
                 new ArrayList<>()
         );
 
@@ -83,7 +72,6 @@ public class ExampleTraces {
                 "service2",
                 "x",
                 ModelConstants.POST_STRING,
-                2L,
                 new ArrayList<>()
         );
 
@@ -91,7 +79,6 @@ public class ExampleTraces {
                 "service2",
                 ModelConstants.DATABASE_NAME,
                 null,
-                3L,
                 new ArrayList<>()
         );
 
@@ -99,7 +86,6 @@ public class ExampleTraces {
                 "service3",
                 "y",
                 ModelConstants.POST_STRING,
-                3L,
                 new ArrayList<>()
         );
 
@@ -107,24 +93,17 @@ public class ExampleTraces {
                 "service3",
                 ModelConstants.DATABASE_NAME,
                 null,
-                4L,
                 new ArrayList<>()
         );
 
-        ArrayList<Node> rootChildren = new ArrayList<>();
-        rootChildren.add(rootChildNode1);
-        rootNode.setChildren(rootChildren);
+        rootNode.addChild(rootChildNode1);
 
-        ArrayList<Node> rootChildChildren = new ArrayList<>();
-        rootChildChildren.add(rootChildNode1ChildNode);
-        rootChildChildren.add(rootChildNode1DatabaseNode);
-        rootChildNode1.setChildren(rootChildChildren);
+        rootChildNode1.addChild(rootChildNode1ChildNode);
+        rootChildNode1.addChild(rootChildNode1DatabaseNode);
 
-        ArrayList<Node> rootChildChildChildren = new ArrayList<>();
-        rootChildChildChildren.add(rootChildNode1ChildNodeDatabaseNode);
-        rootChildNode1ChildNode.setChildren(rootChildChildChildren);
+        rootChildNode1ChildNode.addChild(rootChildNode1ChildNodeDatabaseNode);
 
-        return new Trace(rootNode);
+        return rootNode;
     }
 
 
@@ -138,12 +117,11 @@ public class ExampleTraces {
         return map;
     }
 
-    public static Trace Get_example_complex_trace() {
+    public static Node Get_example_complex_trace() {
         Node rootNode = new Node(
                 "service1",
                 "a",
                 ModelConstants.ROOT_METHOD_STRING,
-                1L,
                 new ArrayList<>()
         );
 
@@ -151,7 +129,6 @@ public class ExampleTraces {
                 "service2",
                 "x",
                 ModelConstants.POST_STRING,
-                2L,
                 new ArrayList<>()
         );
 
@@ -159,7 +136,6 @@ public class ExampleTraces {
                 "service1",
                 ModelConstants.DATABASE_NAME,
                 null,
-                1L,
                 new ArrayList<>()
         );
 
@@ -167,7 +143,6 @@ public class ExampleTraces {
                 "service2",
                 ModelConstants.DATABASE_NAME,
                 null,
-                3L,
                 new ArrayList<>()
         );
 
@@ -175,7 +150,6 @@ public class ExampleTraces {
                 "service2",
                 ModelConstants.DATABASE_NAME,
                 null,
-                3L,
                 new ArrayList<>()
         );
 
@@ -183,7 +157,6 @@ public class ExampleTraces {
                 "service3",
                 "y",
                 ModelConstants.PUT_STRING,
-                3L,
                 new ArrayList<>()
         );
 
@@ -191,7 +164,6 @@ public class ExampleTraces {
                 "service3",
                 ModelConstants.DATABASE_NAME,
                 null,
-                4L,
                 new ArrayList<>()
         );
 
@@ -199,7 +171,6 @@ public class ExampleTraces {
                 "service4",
                 "z",
                 ModelConstants.GET_STRING,
-                5L,
                 new ArrayList<>()
         );
 
@@ -207,7 +178,6 @@ public class ExampleTraces {
                 "service4",
                 ModelConstants.DATABASE_NAME,
                 null,
-                6L,
                 new ArrayList<>()
         );
 
@@ -216,22 +186,16 @@ public class ExampleTraces {
         rootChildren.add(rootNodeDatabaseNode);
         rootNode.setChildren(rootChildren);
 
-        ArrayList<Node> node2Children = new ArrayList<>();
-        node2Children.add(node3);
-        node2Children.add(node2DatabaseNode);
-        node2Children.add(node2DatabaseNode2);
-         node2.setChildren(node2Children);
+        node2.addChild(node3);
+        node2.addChild(node2DatabaseNode);
+        node2.addChild(node2DatabaseNode2);
 
-        ArrayList<Node> node3Children = new ArrayList<>();
-        node3Children.add(node3DatabaseNode);
-        node3Children.add(node4);
-        node3.setChildren(node3Children);
+        node3.addChild(node3DatabaseNode);
+        node3.addChild(node4);
 
-        ArrayList<Node> node4Children = new ArrayList<>();
-        node4Children.add(node4DatabaseNode);
-        node4.setChildren(node4Children);
+        node4.addChild(node4DatabaseNode);
 
-        return new Trace(rootNode);
+        return rootNode;
     }
 
     public static Map<String, Set<String>> Get_example_complex_trace_read_endpoint_map() {
@@ -252,6 +216,141 @@ public class ExampleTraces {
         return map;
     }
 
+    public static Node Get_example_parallel_trace() {
+        Node rootNode = new Node(
+                "service1",
+                "i1",
+                ModelConstants.ROOT_METHOD_STRING,
+                new ArrayList<>()
+        );
 
+        Node node2 = new Node(
+                "service2",
+                "i2",
+                ModelConstants.GET_STRING,
+                new ArrayList<>()
+        );
+
+        Node rootNodeDatabaseNode = new Node(
+                "service1",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node2DatabaseNode = new Node(
+                "service2",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node2DatabaseNode2 = new Node(
+                "service2",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node3 = new Node(
+                "service3",
+                "i3",
+                ModelConstants.PUT_STRING,
+                new ArrayList<>()
+        );
+
+        Node node3DatabaseNode = new Node(
+                "service3",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node4 = new Node(
+                "service4",
+                "i4",
+                ModelConstants.GET_STRING,
+                new ArrayList<>()
+        );
+
+        Node node4DatabaseNode = new Node(
+                "service4",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node5 = new Node(
+                "service5",
+                "i5",
+                ModelConstants.POST_STRING,
+                new ArrayList<>()
+        );
+
+        Node node5DatabaseNode = new Node(
+                "service5",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        Node node6 = new Node(
+                "service2",
+                "i2",
+                ModelConstants.GET_STRING,
+                new ArrayList<>()
+        );
+
+        Node node6DatabaseNode = new Node(
+                "service2",
+                ModelConstants.DATABASE_NAME,
+                null,
+                new ArrayList<>()
+        );
+
+        ArrayList<Node> rootChildren = new ArrayList<>();
+        rootChildren.add(node2);
+        rootChildren.add(rootNodeDatabaseNode);
+        rootNode.setChildren(rootChildren);
+
+        node2.addChild(node3);
+        node2.addChild(node4);
+        node2.addChild(node2DatabaseNode);
+        node2.addChild(node2DatabaseNode);
+        node2.addChild(node2DatabaseNode);
+        node2.addChild(node2DatabaseNode);
+        node2.addChild(node2DatabaseNode2);
+
+        node3.addChild(node3DatabaseNode);
+        node3.addChild(node6);
+
+        node4.addChild(node4DatabaseNode);
+        node4.addChild(node5);
+
+        node5.addChild(node5DatabaseNode);
+
+        node6.addChild(node6DatabaseNode);
+
+        return rootNode;
+    }
+
+    public static Map<String, Set<String>> Get_example_parallel_trace_read_endpoint_map() {
+        Map<String, Set<String>> map = new HashMap<>();
+
+        map.put("service1", new HashSet<>(Collections.singleton("i1")));
+        map.put("service2", new HashSet<>(Collections.singleton("i2")));
+        map.put("service4", new HashSet<>(Collections.singleton("i4")));
+
+        return map;
+    }
+
+    public static Map<String, Set<String>> Get_example_parallel_trace_write_endpoint_map() {
+        Map<String, Set<String>> map = new HashMap<>();
+
+        map.put("service3", new HashSet<>(Collections.singleton("i3")));
+        map.put("service5", new HashSet<>(Collections.singleton("i5")));
+
+        return map;
+    }
 
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Metric {
+public class DataDependsMetric {
 
     private DataDependsType type;
     private String service;

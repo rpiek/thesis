@@ -11,6 +11,7 @@ public class Result {
 
     Map<String, Integer> dataDependsReadMap;
     Map<String, Integer> dataDependsWriteMap;
-    List<Metric> metrics;
+    List<DataDependsMetric> dataDependsMetrics;
+    List<DataDependsNeedMetric> dataDependsNeedMetrics;
 
 }

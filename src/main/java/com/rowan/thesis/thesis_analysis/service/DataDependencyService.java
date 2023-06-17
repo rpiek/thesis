@@ -1,11 +1,10 @@
 package com.rowan.thesis.thesis_analysis.service;
 
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
-import com.rowan.thesis.thesis_analysis.model.metric.Metric;
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
-import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,58 +19,51 @@ import org.springframework.stereotype.Service;
 @Service
 public class DataDependencyService {
 
-    ArrayList<Metric> results = new ArrayList<>();
+    ArrayList<DataDependsMetric> results = new ArrayList<>();
     Set<String> services = new HashSet<>();
+    final Set<String> readMethods = Set.of(ModelConstants.GET_STRING);
+    final Set<String> writeMethods = Set.of(ModelConstants.POST_STRING, ModelConstants.PUT_STRING);
 
-    private final TraceService traceService;
-
-    public DataDependencyService(TraceService traceService) {
-        this.traceService = traceService;
-    }
 
     public Result getDataDependsScore(Model model) {
-        setLocalState();
+        setLocalState(model);
         Map<String, Integer> dataDependsReadMap = new HashMap<>();
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
 
         for (String service : services) {
-            if (traceService.getReadEndpointMap().containsKey(service)) {
+            if (model.getReadEndpointMap().containsKey(service)) {
                 dataDependsReadMap.put(service, dataDependsRead(service, model));
-            } else {
-                dataDependsReadMap.put(service, 0);
             }
-            if (traceService.getWriteEndpointMap().containsKey(service)) {
+            if (model.getWriteEndpointMap().containsKey(service)) {
                 dataDependsWriteMap.put(service, dataDependsWrite(service, model));
-            } else {
-                dataDependsWriteMap.put(service, 0);
             }
         }
 
-        return new Result(dataDependsReadMap, dataDependsWriteMap, results);
+        return new Result(dataDependsReadMap, dataDependsWriteMap, results, null);
     }
 
     public Result getDataDependsReadScore(Model model) {
-        setLocalState();
+        setLocalState(model);
         Map<String, Integer> dataDependsReadMap = new HashMap<>();
-        for (String service : traceService.getReadEndpointMap().keySet()) {
+        for (String service : model.getReadEndpointMap().keySet()) {
             dataDependsReadMap.put(service, dataDependsRead(service, model));
         }
-        return new Result(dataDependsReadMap, null, results);
+        return new Result(dataDependsReadMap, null, results, null);
     }
 
     public Result getDataDependsWriteScore(Model model) {
-        setLocalState();
+        setLocalState(model);
         Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        for (String service : traceService.getWriteEndpointMap().keySet()) {
+        for (String service : model.getWriteEndpointMap().keySet()) {
             dataDependsWriteMap.put(service, dataDependsWrite(service, model));
         }
 
-        return new Result(null, dataDependsWriteMap, results);
+        return new Result(null, dataDependsWriteMap, results, null);
     }
 
     private int dataDependsRead(String serviceName, Model model) {
         int result = 0;
-        for (String path : traceService.getReadEndpointMap().get(serviceName)) {
+        for (String path : model.getReadEndpointMap().get(serviceName)) {
             result += dataDependsReadOnEndpoint(serviceName, path, model);
         }
 
@@ -80,7 +72,7 @@ public class DataDependencyService {
 
     private int dataDependsWrite(String serviceName, Model model) {
         int result = 0;
-        for (String path : traceService.getWriteEndpointMap().get(serviceName)) {
+        for (String path : model.getWriteEndpointMap().get(serviceName)) {
             result += dataDependsWriteOnEndpoint(serviceName, path, model);
         }
 
@@ -89,46 +81,41 @@ public class DataDependencyService {
 
     private int dataDependsReadOnEndpoint(String serviceName, String endpoint, Model model) {
         ArrayList<Integer> valuesPerService = new ArrayList<>();
-        Set<String> methods = new HashSet<>(Collections.singleton(ModelConstants.GET_STRING));
 
         for (String serviceCallee : services) {
-            reachableReadsOrWrites(serviceName, endpoint, model, valuesPerService, methods, serviceCallee);
+            reachableDependencies(serviceName, endpoint, model, valuesPerService, readMethods, serviceCallee);
         }
 
         int result = euclidianNorm(valuesPerService);
-        results.add(new Metric(DataDependsType.DATA_DEPENDS_READ, serviceName, endpoint, result));
+        results.add(new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, serviceName, endpoint, result));
 
         return result;
     }
 
     private int dataDependsWriteOnEndpoint(String serviceName, String endpoint, Model model) {
         ArrayList<Integer> valuesPerService = new ArrayList<>();
-        Set<String> methods = new HashSet<>();
-        methods.add(ModelConstants.POST_STRING);
-        methods.add(ModelConstants.PUT_STRING);
 
         for (String serviceCallee : services) {
-            reachableReadsOrWrites(serviceName, endpoint, model, valuesPerService, methods, serviceCallee);
+            reachableDependencies(serviceName, endpoint, model, valuesPerService, writeMethods, serviceCallee);
         }
 
         int result = euclidianNorm(valuesPerService);
-        results.add(new Metric(DataDependsType.DATA_DEPENDS_WRITE, serviceName, endpoint, result));
+        results.add(new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, serviceName, endpoint, result));
 
         return result;
     }
 
-    private void reachableReadsOrWrites(String serviceName, String endpoint, Model model, ArrayList<Integer> valuesPerService, Set<String> methods, String serviceCallee) {
+    private void reachableDependencies(String serviceName, String endpoint, Model model, ArrayList<Integer> valuesPerService, Set<String> methods, String serviceCallee) {
         if (!serviceCallee.equals(serviceName)) {
             int value = 0;
-            for (Trace trace : model.getTraces()) {
+            for (Node node : model.getTraces()) {
                 List<List<Node>> paths = new ArrayList<>();
-                longestPaths(serviceName, serviceCallee, endpoint, trace.getNode(), methods, new ArrayList<>(), new ArrayList<>(), paths);
+                longestPaths(serviceName, serviceCallee, endpoint, node, methods, new ArrayList<>(), new ArrayList<>(), paths);
                 for (List<Node> path : paths) {
                     // Retrieve the node for which we want to calculate the data dependency
                     Node targetNode = path.get(path.size() - 1);
-                    path.remove(path.size() - 1);
                     // Filter out all vertices which equal the service for which we want to measure the dependency
-                    path = path.stream().filter(node -> !node.getName().equals(serviceName)).collect(Collectors.toList());
+                    path = path.stream().filter(node1 -> !node1.getName().equals(serviceName)).collect(Collectors.toList());
                     if (!path.isEmpty()) {
                         value += path.size() * intraDataDependency(targetNode);
                     }
@@ -149,20 +136,25 @@ public class DataDependencyService {
     }
 
     private void longestPaths(String target, String source, String endpoint, Node node, Set<String> methods, List<Node> currentPath, List<Node> longestPath, List<List<Node>> result) {
-
-        if (node.getMethod() != null && (node.getMethod().equals(ModelConstants.ROOT_METHOD_STRING) || methods.contains(node.getMethod()))) {
+        // Database vertices can't be in the path
+        if (currentPath.isEmpty() || (!node.getEndpoint().equals(ModelConstants.DATABASE_NAME) && methods.contains(node.getMethod()))) {
+            currentPath.add(node);
+        } else {
+            currentPath.clear();
             currentPath.add(node);
         }
 
-        if (node.getName().equals(target) && node.getEndpoint().equals(endpoint) && currentPath.size() >= 2 && currentPath.get(currentPath.size() - 2).getName().equals(source)) {
+        // Check if the current node matches the target and endpoint, and the path has at least two vertices
+        if (node.getEndpoint().equals(endpoint) && node.getName().equals(target) && currentPath.size() >= 2 && currentPath.get(currentPath.size() - 2).getName().equals(source)) {
             longestPath.clear();
             longestPath.addAll(currentPath);
-            result.add(longestPath);
+            result.add(new ArrayList<>(longestPath)); // Add a copy of the longest path to the result list
         }
 
         for (Node childNode : node.getChildren()) {
-            if (!childNode.getName().equals(ModelConstants.DATABASE_NAME) || !methods.contains(childNode.getMethod())) {
-                longestPaths(target, source, endpoint, childNode, methods, currentPath, longestPath, result);
+            if (!childNode.getEndpoint().equals(ModelConstants.DATABASE_NAME)) {
+                List<Node> currentPathCopy = currentPath;
+                longestPaths(target, source, endpoint, childNode, methods, currentPathCopy, longestPath, result);
             }
         }
 
@@ -173,11 +165,11 @@ public class DataDependencyService {
         return node.getChildren().stream().filter(child -> child.getEndpoint().equals(ModelConstants.DATABASE_NAME)).toList().size();
     }
 
-    private void setLocalState() {
+    private void setLocalState(Model model) {
         results.clear();
         services.clear();
-        services.addAll(traceService.getReadEndpointMap().keySet());
-        services.addAll(traceService.getWriteEndpointMap().keySet());
+        services.addAll(model.getReadEndpointMap().keySet());
+        services.addAll(model.getWriteEndpointMap().keySet());
     }
 
 }

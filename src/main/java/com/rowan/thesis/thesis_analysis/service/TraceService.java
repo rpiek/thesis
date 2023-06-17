@@ -3,11 +3,9 @@ package com.rowan.thesis.thesis_analysis.service;
 import com.rowan.thesis.thesis_analysis.model.input.Span;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
-import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,26 +20,18 @@ public class TraceService {
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
     private final Map<String, Set<String>> writeEndpointMap = new HashMap<>();
 
-    public Map<String, Set<String>> getReadEndpointMap() {
-        return readEndpointMap;
-    }
-
-    public Map<String, Set<String>> getWriteEndpointMap() {
-        return writeEndpointMap;
-    }
-
     public Model tracesToModel(List<List<Span>> traces) {
-        List<Trace> trees = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         readEndpointMap.clear();
         writeEndpointMap.clear();
         for (List<Span> spans : traces) {
-            trees.add(traceToTree(spans));
+            nodes.add(traceToTree(spans));
         }
 
-        return new Model(trees);
+        return new Model(nodes, readEndpointMap, writeEndpointMap);
     }
 
-    private Trace traceToTree(List<Span> spans) {
+    private Node traceToTree(List<Span> spans) {
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
         spans.remove(beginSpan);
         mutateMap(beginSpan);
@@ -50,7 +40,7 @@ public class TraceService {
         beginNode.setChildren(traceToTreeRecursive(beginSpan.getSpanId(), spans));
         beginNode.setChildren(beginNode.getChildren().stream().filter(node -> (node.getEndpoint().equals(ModelConstants.DATABASE_NAME) || !node.getName().equals(beginNode.getName()))).collect(Collectors.toList()));
 
-        return new Trace(beginNode);
+        return beginNode;
     }
 
     private List<Node> traceToTreeRecursive(String id, List<Span> spans) {
@@ -66,9 +56,6 @@ public class TraceService {
             }
             Node node = spanToNode(span);
             List<Node> children = traceToTreeRecursive(span.getSpanId(), spans);
-            if (children != null && children.size() >= 1) {
-                children.sort(Comparator.comparing(Node::getTimeStamp));
-            }
             node.setChildren(children);
 
             nodes.add(node);
@@ -100,7 +87,7 @@ public class TraceService {
     }
 
     private Node spanToNode(Span span) {
-        return new Node(span.getLocalEndpoint().getServiceName(), span.getPath(), span.getTags().getMethod(), span.getTimeStamp(), null);
+        return new Node(span.getLocalEndpoint().getServiceName(), span.getPath(), span.getTags().getMethod(),null);
     }
 
 }
