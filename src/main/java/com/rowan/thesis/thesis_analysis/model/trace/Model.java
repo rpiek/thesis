@@ -11,10 +11,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class Model {
 
-    private List<Node> traces;
+    private List<Vertex> vertices;
 
-    private Map<String, Set<String>> readEndpointMap = new HashMap<>();
+    private Map<String, Set<String>> readEndpointMap;
 
-    private Map<String, Set<String>> writeEndpointMap = new HashMap<>();
+    private Map<String, Set<String>> writeEndpointMap;
 
 }

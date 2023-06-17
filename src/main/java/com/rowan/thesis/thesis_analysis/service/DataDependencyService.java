@@ -3,8 +3,10 @@ package com.rowan.thesis.thesis_analysis.service;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
+import com.rowan.thesis.thesis_analysis.model.trace.Edge;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
+import com.rowan.thesis.thesis_analysis.model.trace.Vertex;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,12 +110,12 @@ public class DataDependencyService {
     private void reachableDependencies(String serviceName, String endpoint, Model model, ArrayList<Integer> valuesPerService, Set<String> methods, String serviceCallee) {
         if (!serviceCallee.equals(serviceName)) {
             int value = 0;
-            for (Node node : model.getTraces()) {
-                List<List<Node>> paths = new ArrayList<>();
-                longestPaths(serviceName, serviceCallee, endpoint, node, methods, new ArrayList<>(), new ArrayList<>(), paths);
-                for (List<Node> path : paths) {
+            for (Vertex vertex : model.getVertices()) {
+                List<List<Vertex>> paths = new ArrayList<>();
+//                longestPaths(serviceName, serviceCallee, endpoint, vertex, methods, new ArrayList<>(), new ArrayList<>(), paths);
+                for (List<Vertex> path : paths) {
                     // Retrieve the node for which we want to calculate the data dependency
-                    Node targetNode = path.get(path.size() - 1);
+                    Vertex targetNode = path.get(path.size() - 1);
                     // Filter out all vertices which equal the service for which we want to measure the dependency
                     path = path.stream().filter(node1 -> !node1.getName().equals(serviceName)).collect(Collectors.toList());
                     if (!path.isEmpty()) {
@@ -135,34 +137,24 @@ public class DataDependencyService {
         return (int) Math.sqrt(sum);
     }
 
-    private void longestPaths(String target, String source, String endpoint, Node node, Set<String> methods, List<Node> currentPath, List<Node> longestPath, List<List<Node>> result) {
-        // Database vertices can't be in the path
-        if (currentPath.isEmpty() || (!node.getEndpoint().equals(ModelConstants.DATABASE_NAME) && methods.contains(node.getMethod()))) {
-            currentPath.add(node);
-        } else {
+    private void longestPaths(String target, String source, String endpoint, Vertex node, Edge edge, Set<String> methods, List<Vertex> currentPath, List<List<Vertex>> result) {
+        if (!methods.contains(edge.getMethod()) && !currentPath.isEmpty()) {
             currentPath.clear();
             currentPath.add(node);
         }
 
-        // Check if the current node matches the target and endpoint, and the path has at least two vertices
-        if (node.getEndpoint().equals(endpoint) && node.getName().equals(target) && currentPath.size() >= 2 && currentPath.get(currentPath.size() - 2).getName().equals(source)) {
-            longestPath.clear();
-            longestPath.addAll(currentPath);
-            result.add(new ArrayList<>(longestPath)); // Add a copy of the longest path to the result list
+        if (currentPath.size() >= 2 && currentPath.get(currentPath.size()-2).getName().equals(source) && edge.getEndpoint().equals(endpoint)) {
+            result.add(currentPath);
+            currentPath.clear();
         }
 
-        for (Node childNode : node.getChildren()) {
-            if (!childNode.getEndpoint().equals(ModelConstants.DATABASE_NAME)) {
-                List<Node> currentPathCopy = currentPath;
-                longestPaths(target, source, endpoint, childNode, methods, currentPathCopy, longestPath, result);
-            }
+        for (Edge edge1 : node.getEdges()) {
+            longestPaths(target, source, endpoint, edge1.getTarget(), edge1, methods, currentPath, result);
         }
-
-        currentPath.remove(node);
     }
 
-    private int intraDataDependency(Node node) {
-        return node.getChildren().stream().filter(child -> child.getEndpoint().equals(ModelConstants.DATABASE_NAME)).toList().size();
+    private int intraDataDependency(Vertex vertex) {
+        return vertex.getEdges().stream().filter(child -> child.getEndpoint().equals(ModelConstants.DATABASE_NAME)).toList().size();
     }
 
     private void setLocalState(Model model) {

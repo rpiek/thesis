@@ -3,8 +3,10 @@ package com.rowan.thesis.thesis_analysis.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rowan.thesis.thesis_analysis.model.input.Span;
+import com.rowan.thesis.thesis_analysis.model.trace.Edge;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
+import com.rowan.thesis.thesis_analysis.model.trace.Vertex;
 import com.rowan.thesis.thesis_analysis.utility.ModelConstants;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +31,6 @@ public class TraceServiceTests {
         ClassPathResource resource = new ClassPathResource("/TraceServiceTests/example_traces_1.json");
         List<List<Span>> input = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
         HashMap<String, Set<String>> readEndpointMap = new HashMap<>();
-        readEndpointMap.put("ts-travel-service", new HashSet<>(Collections.singleton("get /api/v1/travelservice/routes/{tripid}")));
         readEndpointMap.put("ts-route-service", new HashSet<>(Collections.singleton("get /api/v1/routeservice/routes/{routeid}")));
         Model expected = new Model(new ArrayList<>(Collections.singleton(getTrace())), readEndpointMap, new HashMap<>());
 
@@ -40,40 +41,19 @@ public class TraceServiceTests {
                 .isEqualTo(expected);
     }
 
-    private static Node getTrace() {
-        Node rootNode = new Node(
-            "ts-travel-service",
-            "get /api/v1/travelservice/routes/{tripid}",
-                ModelConstants.ROOT_METHOD_STRING,
-            new ArrayList<>()
-        );
+    private static Vertex getTrace() {
 
-        Node rootChildNode1 = new Node(
-            "ts-travel-service",
-                "database",
-                null,
-                new ArrayList<>()
-        );
+        Vertex root = new Vertex("ts-travel-service", new ArrayList<>());
+        Vertex databaseRoot = new Vertex("ts-travel-service", new ArrayList<>());
 
-        Node rootChildNode2 = new Node(
-                "ts-route-service",
-                "get /api/v1/routeservice/routes/{routeid}",
-                ModelConstants.GET_STRING,
-                new ArrayList<>()
-        );
+        Vertex vertex1 = new Vertex("ts-route-service", new ArrayList<>());
+        Vertex databaseVertex1 = new Vertex("ts-route-service", new ArrayList<>());
 
-        Node rootChildNode1Child = new Node(
-                "ts-route-service",
-                "database",
-                null,
-                new ArrayList<>()
-        );
+        root.addEdge(new Edge("database", "database", databaseRoot));
+        root.addEdge(new Edge("get /api/v1/routeservice/routes/{routeid}", "GET", vertex1));
+        vertex1.addEdge(new Edge("database", "database", databaseVertex1));
 
-        rootChildNode2.setChildren(new ArrayList<>(Collections.singleton(rootChildNode1Child)));
-        rootNode.addChild(rootChildNode1);
-        rootNode.addChild(rootChildNode2);
-
-        return rootNode;
+        return root;
     }
 
 }

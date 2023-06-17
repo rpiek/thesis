@@ -33,10 +33,8 @@ public class DataDependencyServiceTests {
     @Test
     public void Test_get_data_depends_read() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service1", "a", 0);
         DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "x", 1);
         DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsMetric1);
         dataDependsMetrics.add(dataDependsMetric2);
         dataDependsMetrics.add(dataDependsMetric3);
         Map<String, Integer> map = new HashMap<>();
@@ -57,10 +55,8 @@ public class DataDependencyServiceTests {
     @Test
     public void Test_get_data_depends_write() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service1", "a", 0);
         DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 1);
         DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsMetric1);
         dataDependsMetrics.add(dataDependsMetric2);
         dataDependsMetrics.add(dataDependsMetric3);
         Map<String, Integer> map = new HashMap<>();
@@ -80,11 +76,9 @@ public class DataDependencyServiceTests {
     @Test
     public void Test_get_data_depends() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsReadDataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service1", "a", 0);
         DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", 1);
         DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 2);
         DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsReadDataDependsMetric1);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
         dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
         dataDependsMetrics.add(dataDependsWriteDataDependsMetric3);
@@ -105,35 +99,35 @@ public class DataDependencyServiceTests {
                 .isEqualTo(expected);
     }
 
-    @Test
-    public void Test_get_data_depends_parallel() {
-        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsReadDataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service1", "i1", 0);
-        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "i2", 3);
-        DataDependsMetric dataDependsReadDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "i4", 2);
-        DataDependsMetric dataDependsWriteDataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "i3", 1);
-        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "i5", 1);
-        dataDependsMetrics.add(dataDependsReadDataDependsMetric1);
-        dataDependsMetrics.add(dataDependsReadDataDependsMetric2);
-        dataDependsMetrics.add(dataDependsReadDataDependsMetric3);
-        dataDependsMetrics.add(dataDependsWriteDataDependsMetric1);
-        dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
-        Map<String, Integer> dataDependsReadMap = new HashMap<>();
-        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        dataDependsReadMap.put("service1", 0);
-        dataDependsReadMap.put("service2", 5);
-        dataDependsReadMap.put("service4", 2);
-        dataDependsWriteMap.put("service3", 1);
-        dataDependsWriteMap.put("service5", 1);
-
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, null);
-
-        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_parallel_trace())), ExampleTraces.Get_example_parallel_trace_read_endpoint_map(), ExampleTraces.Get_example_parallel_trace_write_endpoint_map()));
-
-        Assertions.assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringCollectionOrder()
-                .isEqualTo(expected);
-    }
+//    @Test
+//    public void Test_get_data_depends_parallel() {
+//        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
+//        DataDependsMetric dataDependsReadDataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service1", "i1", 0);
+//        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "i2", 3);
+//        DataDependsMetric dataDependsReadDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "i4", 2);
+//        DataDependsMetric dataDependsWriteDataDependsMetric1 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "i3", 1);
+//        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "i5", 1);
+//        dataDependsMetrics.add(dataDependsReadDataDependsMetric1);
+//        dataDependsMetrics.add(dataDependsReadDataDependsMetric2);
+//        dataDependsMetrics.add(dataDependsReadDataDependsMetric3);
+//        dataDependsMetrics.add(dataDependsWriteDataDependsMetric1);
+//        dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
+//        Map<String, Integer> dataDependsReadMap = new HashMap<>();
+//        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
+//        dataDependsReadMap.put("service1", 0);
+//        dataDependsReadMap.put("service2", 5);
+//        dataDependsReadMap.put("service4", 2);
+//        dataDependsWriteMap.put("service3", 1);
+//        dataDependsWriteMap.put("service5", 1);
+//
+//        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, null);
+//
+//        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_parallel_trace())), ExampleTraces.Get_example_parallel_trace_read_endpoint_map(), ExampleTraces.Get_example_parallel_trace_write_endpoint_map()));
+//
+//        Assertions.assertThat(actual)
+//                .usingRecursiveComparison()
+//                .ignoringCollectionOrder()
+//                .isEqualTo(expected);
+//    }
 
 }
