@@ -9,11 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class Vertex {
 
+    private String id;
     private String name;
-    private List<Edge> edges;
-
-    public void addEdge(Edge edge) {
-        edges.add(edge);
-    }
 
 }

@@ -1,15 +1,14 @@
 package com.rowan.thesis.thesis_analysis.model.trace;
 
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Edge {
+public class Trace {
 
-    private String endpoint;
-    private String method;
-    private Vertex source;
-    private Vertex target;
+    Set<Vertex> vertices;
+    Set<Edge> edges;
 
 }

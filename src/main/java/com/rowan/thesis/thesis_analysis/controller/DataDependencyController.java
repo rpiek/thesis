@@ -4,6 +4,7 @@ import com.rowan.thesis.thesis_analysis.model.input.Span;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.model.trace.Node;
+import com.rowan.thesis.thesis_analysis.model.trace.Trace;
 import com.rowan.thesis.thesis_analysis.model.trace.Vertex;
 import com.rowan.thesis.thesis_analysis.service.DataDependencyService;
 import com.rowan.thesis.thesis_analysis.service.SpanConverter;
@@ -29,28 +30,28 @@ public class DataDependencyController {
 
     @PostMapping("/analyze")
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
-        List<Vertex> vertices = traceService.getGraphs(traces.get(0));
         Model model = traceService.tracesToModel(traces);
-        Result result = dataDependencyService.getDataDependsScore(model);
+        List<Trace> newTraces = traceService.getSubGraphs(model.getTraces().get(0), null);
+//        Result result = dataDependencyService.getDataDependsScore(model);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @PostMapping("/analyze/DataDependsRead")
-    public @ResponseBody ResponseEntity<Result> calculateDataDependendsRead(@RequestBody List<List<Span>> traces) {
-        Model model = traceService.tracesToModel(traces);
-        Result result = dataDependencyService.getDataDependsScore(model);
+//    @PostMapping("/analyze/DataDependsRead")
+//    public @ResponseBody ResponseEntity<Result> calculateDataDependendsRead(@RequestBody List<List<Span>> traces) {
+//        Model model = traceService.tracesToModel(traces);
+////        Result result = dataDependencyService.getDataDependsScore(model);
+//
+//        return new ResponseEntity<>(result, HttpStatus.OK);
+//    }
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
-    @PostMapping("/analyze/dataDependsWrite")
-    public @ResponseBody ResponseEntity<Result> calculateDataDependendsWrite(@RequestBody List<List<Span>> traces) {
-        Model model = traceService.tracesToModel(traces);
-        Result result = dataDependencyService.getDataDependsScore(model);
-
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
+//    @PostMapping("/analyze/dataDependsWrite")
+//    public @ResponseBody ResponseEntity<Result> calculateDataDependendsWrite(@RequestBody List<List<Span>> traces) {
+//        Model model = traceService.tracesToModel(traces);
+////        Result result = dataDependencyService.getDataDependsScore(model);
+//
+//        return new ResponseEntity<>(result, HttpStatus.OK);
+//    }
 
 
 }

@@ -1,6 +1,5 @@
 package com.rowan.thesis.thesis_analysis.model.trace;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class Model {
 
-    private List<Vertex> vertices;
+    private List<Trace> traces;
 
     private Map<String, Set<String>> readEndpointMap;
 
