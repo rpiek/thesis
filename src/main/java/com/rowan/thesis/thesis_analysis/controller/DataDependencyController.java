@@ -31,8 +31,7 @@ public class DataDependencyController {
     @PostMapping("/analyze")
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
-        List<Trace> newTraces = traceService.getSubGraphs(model.getTraces().get(0), null);
-//        Result result = dataDependencyService.getDataDependsScore(model);
+        Result result = dataDependencyService.getDataDependsScore(model);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
@@ -44,7 +43,7 @@ public class DataDependencyController {
 //
 //        return new ResponseEntity<>(result, HttpStatus.OK);
 //    }
-
+//
 //    @PostMapping("/analyze/dataDependsWrite")
 //    public @ResponseBody ResponseEntity<Result> calculateDataDependendsWrite(@RequestBody List<List<Span>> traces) {
 //        Model model = traceService.tracesToModel(traces);

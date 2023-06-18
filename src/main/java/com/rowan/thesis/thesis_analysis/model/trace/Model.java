@@ -10,7 +10,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class Model {
 
-    private List<Trace> traces;
+    private List<Trace> readTraces;
+
+    private List<Trace> writeTraces;
 
     private Map<String, Set<String>> readEndpointMap;
 

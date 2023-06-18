@@ -12,92 +12,92 @@ import java.util.Map;
 import java.util.Set;
 
 public class ExampleTraces {
-
-
-    private static final Vertex DATABASE_VERTEX = new Vertex("database", new ArrayList<>());
-    private static final Edge DATABASE_EDGE = new Edge("database", "database", DATABASE_VERTEX);
-
-
-    public static Vertex Get_example_simple_get_trace() {
-
-        Vertex root = new Vertex("service1", new ArrayList<>());
-        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
-        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
-
-        root.addEdge(new Edge("x", ModelConstants.GET_STRING, vertex1));
-        root.addEdge(DATABASE_EDGE);
-
-        vertex1.addEdge(new Edge("y", ModelConstants.GET_STRING, vertex2));
-        vertex1.addEdge(DATABASE_EDGE);
-
-        vertex2.addEdge(DATABASE_EDGE);
-
-        return root;
-    }
-
-    public static Vertex Get_example_simple_post_trace() {
-        Vertex root = new Vertex("service1", new ArrayList<>());
-        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
-        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
-
-        root.addEdge(new Edge("x", ModelConstants.POST_STRING, vertex1));
-        root.addEdge(DATABASE_EDGE);
-
-        vertex1.addEdge(new Edge("y", ModelConstants.POST_STRING, vertex2));
-        vertex1.addEdge(DATABASE_EDGE);
-
-        vertex2.addEdge(DATABASE_EDGE);
-
-        return root;
-    }
-
-
-    public static Map<String, Set<String>> Get_example_simple_trace_endpoint_map() {
-        Map<String, Set<String>> map = new HashMap<>();
-
-        map.put("service2", new HashSet<>(Collections.singleton("x")));
-        map.put("service3", new HashSet<>(Collections.singleton("y")));
-
-        return map;
-    }
-
-    public static Vertex Get_example_complex_trace() {
-        Vertex root = new Vertex("service1", new ArrayList<>());
-        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
-        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
-        Vertex vertex3 = new Vertex("service4", new ArrayList<>());
-
-        root.addEdge(new Edge("x", ModelConstants.POST_STRING, vertex1));
-        root.addEdge(DATABASE_EDGE);
-
-        vertex1.addEdge(new Edge("y", ModelConstants.GET_STRING, vertex2));
-        vertex1.addEdge(DATABASE_EDGE);
-        vertex1.addEdge(DATABASE_EDGE);
-
-        vertex2.addEdge(DATABASE_EDGE);
-        vertex2.addEdge(new Edge("z", ModelConstants.GET_STRING, vertex3));
-
-        vertex3.addEdge(DATABASE_EDGE);
-
-        return root;
-    }
-
-    public static Map<String, Set<String>> Get_example_complex_trace_read_endpoint_map() {
-        Map<String, Set<String>> map = new HashMap<>();
-
-        map.put("service4", new HashSet<>(Collections.singleton("z")));
-
-        return map;
-    }
-
-    public static Map<String, Set<String>> Get_example_complex_trace_write_endpoint_map() {
-        Map<String, Set<String>> map = new HashMap<>();
-
-        map.put("service2", new HashSet<>(Collections.singleton("x")));
-        map.put("service3", new HashSet<>(Collections.singleton("y")));
-
-        return map;
-    }
+//
+//
+//    private static final Vertex DATABASE_VERTEX = new Vertex("database", new ArrayList<>());
+//    private static final Edge DATABASE_EDGE = new Edge("database", "database", DATABASE_VERTEX);
+//
+//
+//    public static Vertex Get_example_simple_get_trace() {
+//
+//        Vertex root = new Vertex("service1", new ArrayList<>());
+//        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
+//        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
+//
+//        root.addEdge(new Edge("x", ModelConstants.GET_STRING, vertex1));
+//        root.addEdge(DATABASE_EDGE);
+//
+//        vertex1.addEdge(new Edge("y", ModelConstants.GET_STRING, vertex2));
+//        vertex1.addEdge(DATABASE_EDGE);
+//
+//        vertex2.addEdge(DATABASE_EDGE);
+//
+//        return root;
+//    }
+//
+//    public static Vertex Get_example_simple_post_trace() {
+//        Vertex root = new Vertex("service1", new ArrayList<>());
+//        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
+//        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
+//
+//        root.addEdge(new Edge("x", ModelConstants.POST_STRING, vertex1));
+//        root.addEdge(DATABASE_EDGE);
+//
+//        vertex1.addEdge(new Edge("y", ModelConstants.POST_STRING, vertex2));
+//        vertex1.addEdge(DATABASE_EDGE);
+//
+//        vertex2.addEdge(DATABASE_EDGE);
+//
+//        return root;
+//    }
+//
+//
+//    public static Map<String, Set<String>> Get_example_simple_trace_endpoint_map() {
+//        Map<String, Set<String>> map = new HashMap<>();
+//
+//        map.put("service2", new HashSet<>(Collections.singleton("x")));
+//        map.put("service3", new HashSet<>(Collections.singleton("y")));
+//
+//        return map;
+//    }
+//
+//    public static Vertex Get_example_complex_trace() {
+//        Vertex root = new Vertex("service1", new ArrayList<>());
+//        Vertex vertex1 = new Vertex("service2", new ArrayList<>());
+//        Vertex vertex2 = new Vertex("service3", new ArrayList<>());
+//        Vertex vertex3 = new Vertex("service4", new ArrayList<>());
+//
+//        root.addEdge(new Edge("x", ModelConstants.POST_STRING, vertex1));
+//        root.addEdge(DATABASE_EDGE);
+//
+//        vertex1.addEdge(new Edge("y", ModelConstants.GET_STRING, vertex2));
+//        vertex1.addEdge(DATABASE_EDGE);
+//        vertex1.addEdge(DATABASE_EDGE);
+//
+//        vertex2.addEdge(DATABASE_EDGE);
+//        vertex2.addEdge(new Edge("z", ModelConstants.GET_STRING, vertex3));
+//
+//        vertex3.addEdge(DATABASE_EDGE);
+//
+//        return root;
+//    }
+//
+//    public static Map<String, Set<String>> Get_example_complex_trace_read_endpoint_map() {
+//        Map<String, Set<String>> map = new HashMap<>();
+//
+//        map.put("service4", new HashSet<>(Collections.singleton("z")));
+//
+//        return map;
+//    }
+//
+//    public static Map<String, Set<String>> Get_example_complex_trace_write_endpoint_map() {
+//        Map<String, Set<String>> map = new HashMap<>();
+//
+//        map.put("service2", new HashSet<>(Collections.singleton("x")));
+//        map.put("service3", new HashSet<>(Collections.singleton("y")));
+//
+//        return map;
+//    }
 
 //    public static Node Get_example_parallel_trace() {
 //        Vertex root = new Vertex("service1", new ArrayList<>());

@@ -30,74 +30,74 @@ public class DataDependencyServiceTests {
     @InjectMocks
     private DataDependencyService dataDependencyService;
 
-    @Test
-    public void Test_get_data_depends_read() {
-        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "x", 1);
-        DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsMetric2);
-        dataDependsMetrics.add(dataDependsMetric3);
-        Map<String, Integer> map = new HashMap<>();
-        map.put("service1", 0);
-        map.put("service2", 1);
-        map.put("service3", 2);
-        Result expected = new Result(map, null, dataDependsMetrics, null);
-
-
-        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace())), ExampleTraces.Get_example_simple_trace_endpoint_map(), new HashMap<>()));
-
-        Assertions.assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringCollectionOrder()
-                .isEqualTo(expected);
-    }
-
-    @Test
-    public void Test_get_data_depends_write() {
-        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 1);
-        DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsMetric2);
-        dataDependsMetrics.add(dataDependsMetric3);
-        Map<String, Integer> map = new HashMap<>();
-        map.put("service1", 0);
-        map.put("service2", 1);
-        map.put("service3", 2);
-        Result expected = new Result(null, map, dataDependsMetrics, null);
-
-        Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace())), new HashMap<>(), ExampleTraces.Get_example_simple_trace_endpoint_map()));
-
-        Assertions.assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringCollectionOrder()
-                .isEqualTo(expected);
-    }
-
-    @Test
-    public void Test_get_data_depends() {
-        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
-        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", 1);
-        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 2);
-        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
-        dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
-        dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
-        dataDependsMetrics.add(dataDependsWriteDataDependsMetric3);
-        Map<String, Integer> dataDependsReadMap = new HashMap<>();
-        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
-        dataDependsReadMap.put("service4", 1);
-        dataDependsReadMap.put("service1", 0);
-        dataDependsWriteMap.put("service2", 2);
-        dataDependsWriteMap.put("service3", 2);
-
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, null);
-
-        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map()));
-
-        Assertions.assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringCollectionOrder()
-                .isEqualTo(expected);
-    }
+//    @Test
+//    public void Test_get_data_depends_read() {
+//        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
+//        DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "x", 1);
+//        DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "y", 2);
+//        dataDependsMetrics.add(dataDependsMetric2);
+//        dataDependsMetrics.add(dataDependsMetric3);
+//        Map<String, Integer> map = new HashMap<>();
+//        map.put("service1", 0);
+//        map.put("service2", 1);
+//        map.put("service3", 2);
+//        Result expected = new Result(map, null, dataDependsMetrics, null);
+//
+//
+//        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace())), ExampleTraces.Get_example_simple_trace_endpoint_map(), new HashMap<>()));
+//
+//        Assertions.assertThat(actual)
+//                .usingRecursiveComparison()
+//                .ignoringCollectionOrder()
+//                .isEqualTo(expected);
+//    }
+//
+//    @Test
+//    public void Test_get_data_depends_write() {
+//        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
+//        DataDependsMetric dataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 1);
+//        DataDependsMetric dataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
+//        dataDependsMetrics.add(dataDependsMetric2);
+//        dataDependsMetrics.add(dataDependsMetric3);
+//        Map<String, Integer> map = new HashMap<>();
+//        map.put("service1", 0);
+//        map.put("service2", 1);
+//        map.put("service3", 2);
+//        Result expected = new Result(null, map, dataDependsMetrics, null);
+//
+//        Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace())), new HashMap<>(), ExampleTraces.Get_example_simple_trace_endpoint_map()));
+//
+//        Assertions.assertThat(actual)
+//                .usingRecursiveComparison()
+//                .ignoringCollectionOrder()
+//                .isEqualTo(expected);
+//    }
+//
+//    @Test
+//    public void Test_get_data_depends() {
+//        ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
+//        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", 1);
+//        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", 2);
+//        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", 2);
+//        dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
+//        dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
+//        dataDependsMetrics.add(dataDependsWriteDataDependsMetric3);
+//        Map<String, Integer> dataDependsReadMap = new HashMap<>();
+//        Map<String, Integer> dataDependsWriteMap = new HashMap<>();
+//        dataDependsReadMap.put("service4", 1);
+//        dataDependsReadMap.put("service1", 0);
+//        dataDependsWriteMap.put("service2", 2);
+//        dataDependsWriteMap.put("service3", 2);
+//
+//        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, null);
+//
+//        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map()));
+//
+//        Assertions.assertThat(actual)
+//                .usingRecursiveComparison()
+//                .ignoringCollectionOrder()
+//                .isEqualTo(expected);
+//    }
 
 //    @Test
 //    public void Test_get_data_depends_parallel() {

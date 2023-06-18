@@ -31,14 +31,17 @@ public class TraceService {
 
 
     public Model tracesToModel(List<List<Span>> spanLists) {
-        List<Trace> traces = new ArrayList<>();
+        List<Trace> readTraces = new ArrayList<>();
+        List<Trace> writeTraces = new ArrayList<>();
         readEndpointMap.clear();
         writeEndpointMap.clear();
         for (List<Span> spans : spanLists) {
-            traces.add(getTree(spans));
+            final Trace trace = getTree(spans);
+            readTraces.addAll(getSubGraphs(trace, readMethods));
+            writeTraces.addAll(getSubGraphs(trace, writeMethods));
         }
 
-        return new Model(traces, readEndpointMap, writeEndpointMap);
+        return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
     }
 
     public Trace getTree(List<Span> spans) {
@@ -87,22 +90,22 @@ public class TraceService {
     public List<Trace> getSubGraphs(Trace trace, Set<String> methods) {
         Set<Edge> filteredEdges = new HashSet<>();
         for (Edge edge : trace.getEdges()) {
-            if (readMethods.contains(edge.getMethod())) {
+            if (methods.contains(edge.getMethod())) {
                 filteredEdges.add(edge);
             }
         }
 
-        trace.setEdges(filteredEdges);
+        Trace filteredTrace = new Trace(trace.getVertices(), filteredEdges);
 
         List<Trace> connectedGraphs = new ArrayList<>();
         Set<Vertex> visitedVertices = new HashSet<>();
 
-        for (Vertex vertex : trace.getVertices()) {
+        for (Vertex vertex : filteredTrace.getVertices()) {
             if (!visitedVertices.contains(vertex)) {
                 Set<Vertex> connectedVertices = new HashSet<>();
                 Set<Edge> connectedEdges = new HashSet<>();
 
-                performDFS(vertex, trace, visitedVertices, connectedVertices, connectedEdges);
+                performDFS(vertex, filteredTrace, visitedVertices, connectedVertices, connectedEdges);
 
                 Trace connectedGraph = new Trace(connectedVertices, connectedEdges);
                 if (connectedGraph.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
@@ -127,46 +130,6 @@ public class TraceService {
                 }
             }
         }
-    }
-
-//    public List<Vertex> getGraphs(List<Span> spans) {
-//        List<Vertex> trees = new ArrayList<>();
-//        spanIdSet.clear();
-//
-//        Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
-//        beginSpan.setParentId("qewqeweqwqeweqw");
-//        Span clientSpan = spans.stream().filter(span -> span.getKind() != null && span.getKind().equals("CLIENT")).toList().get(0);
-//        spans.remove(clientSpan);
-//
-//        for (Span span : spans) {
-//            mutateMap(span);
-//            Vertex vertex = createGraph(span, spans);
-//            if (vertex != null && !vertex.getEdges().isEmpty()) {
-//                trees.add(vertex);
-//            }
-//        }
-//
-//        return trees;
-//    }
-//
-//    private Vertex createGraph(Span span, List<Span> spans) {
-//        Vertex root = new Vertex(span.getLocalEndpoint().getServiceName(), new ArrayList<>());
-//        List<Span> spanList = spans.stream().filter(span1 -> span1.getParentId().equals(span.getSpanId())).toList();
-//        for (Span childSpan : spanList) {
-//            Vertex child = createGraph(childSpan, spans);
-//            if (isValidEdge(childSpan) && !spanIdSet.contains(childSpan.getSpanId())) {
-//                if (!span.getPath().equals(ModelConstants.DATABASE_NAME)) {
-//                    spanIdSet.add(span.getSpanId());
-//                }
-//                root.addEdge(new Edge(childSpan.getPath(), childSpan.getTags().getMethod(), child));
-//            }
-//        }
-//        return root;
-//    }
-
-    private boolean isValidEdge(Span span) {
-        String method = span.getTags().getMethod();
-        return method == null || (method.equals("GET") || method.equals("database"));
     }
 
     private void mutateMap(Span span) {
