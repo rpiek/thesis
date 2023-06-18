@@ -94,8 +94,6 @@ public class TraceServiceTests {
         Vertex vertex9 = new Vertex("9", "database");
         Vertex vertex10 = new Vertex("10", "service4");
         Vertex vertex11 = new Vertex("11", "database");
-        Vertex vertex12 = new Vertex("12", "service5");
-        Vertex vertex13 = new Vertex("13", "database");
 
         Set<Edge> edgeSet1 = new HashSet<>();
 
@@ -130,8 +128,6 @@ public class TraceServiceTests {
         Vertex vertex5 = new Vertex("5", "database");
         Vertex vertex6 = new Vertex("6", "service3");
         Vertex vertex7 = new Vertex("7", "database");
-        Vertex vertex8 = new Vertex("8", "service2");
-        Vertex vertex9 = new Vertex("9", "database");
         Vertex vertex10 = new Vertex("10", "service4");
         Vertex vertex11 = new Vertex("11", "database");
         Vertex vertex12 = new Vertex("12", "service5");

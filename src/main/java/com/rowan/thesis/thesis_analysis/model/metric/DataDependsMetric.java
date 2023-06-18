@@ -10,6 +10,6 @@ public class DataDependsMetric {
     private DataDependsType type;
     private String service;
     private String endpoint;
-    private int value;
+    private double value;
 
 }
