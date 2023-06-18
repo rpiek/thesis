@@ -156,4 +156,71 @@ public class TraceServiceTests {
         return List.of(trace1, trace2);
     }
 
+    @Test
+    public void Convert_input_to_trace_complex_dup() throws IOException {
+        ClassPathResource resource = new ClassPathResource("/TraceServiceTests/example_traces_3_dup.json");
+        List<List<Span>> input = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
+        HashMap<String, Set<String>> readEndpointMap = new HashMap<>();
+        HashMap<String, Set<String>> writeEndpointMap = new HashMap<>();
+        readEndpointMap.put("service2", new HashSet<>(Collections.singleton("y")));
+        readEndpointMap.put("service4", new HashSet<>(Collections.singleton("y")));
+        readEndpointMap.put("service3", new HashSet<>(Collections.singleton("p")));
+        writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
+        Model expected = new Model(getReadTracesDup(), getWriteTracesDup(), readEndpointMap, writeEndpointMap);
+
+        Model actual = traceService.tracesToModel(input);
+
+        assertTrue(expected.getReadTraces().containsAll(actual.getReadTraces()));
+        assertTrue(expected.getWriteTraces().containsAll(actual.getWriteTraces()));
+        assertEquals(expected.getReadEndpointMap(), actual.getReadEndpointMap());
+        assertEquals(expected.getWriteEndpointMap(), actual.getWriteEndpointMap());
+    }
+
+    private static List<Trace> getReadTracesDup() {
+        Vertex vertex1 = new Vertex("1", "service1");
+        Vertex vertex2 = new Vertex("2", "database");
+        Vertex vertex3 = new Vertex("3", "service2");
+        Vertex vertex4 = new Vertex("4", "database");
+        Vertex vertex5 = new Vertex("5", "database");
+        Vertex vertex7 = new Vertex("7", "database");
+        Vertex vertex8 = new Vertex("8", "service3");
+        Vertex vertex9 = new Vertex("9", "database");
+        Vertex vertex10 = new Vertex("10", "service4");
+        Vertex vertex11 = new Vertex("11", "database");
+
+        Set<Edge> edgeSet1 = new HashSet<>();
+
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("y", ModelConstants.GET_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex7));
+        edgeSet1.add(new Edge("p", ModelConstants.GET_STRING, vertex3, vertex8));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex8, vertex9));
+        edgeSet1.add(new Edge("y", ModelConstants.GET_STRING, vertex3, vertex10));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+
+        Set<Vertex> vertexSet = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5, vertex7, vertex8, vertex9, vertex10, vertex11);
+
+        return List.of(new Trace(vertexSet, edgeSet1));
+    }
+
+    private static List<Trace> getWriteTracesDup() {
+        Vertex vertex10 = new Vertex("10", "service4");
+        Vertex vertex11 = new Vertex("11", "database");
+        Vertex vertex12 = new Vertex("12", "service5");
+        Vertex vertex13 = new Vertex("13", "database");
+
+        Set<Edge> edgeSet2 = new HashSet<>();
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet2.add(new Edge("y", ModelConstants.POST_STRING, vertex10, vertex12));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex12, vertex13));
+
+        Set<Vertex> vertexSet2 = new HashSet<>(List.of(vertex10, vertex11, vertex12, vertex13));
+
+        Trace trace2 = new Trace(vertexSet2, edgeSet2);
+
+        return List.of(trace2);
+    }
+
 }

@@ -47,47 +47,58 @@ public class TraceService {
     public Trace getTree(List<Span> spans) {
         Set<Vertex> vertices = new HashSet<>();
         Set<Edge> edges = new HashSet<>();
-        Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).toList().get(0);
-        Span clientSpan = spans.stream().filter(span -> span.getKind() != null && span.getKind().equals("CLIENT")).toList().get(0);
-        spans.remove(beginSpan);
-        spans.remove(clientSpan);
+        Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).findFirst().orElse(null);
+        Span clientSpan = spans.stream().filter(span -> span.getKind() != null && span.getKind().equals("CLIENT")).findFirst().orElse(null);
+
+        if (beginSpan == null || clientSpan == null) {
+            // Handle case where beginSpan or clientSpan is not found
+            return new Trace(vertices, edges);
+        }
+
         Vertex root = new Vertex(beginSpan.getSpanId(), beginSpan.getLocalEndpoint().getServiceName());
         vertices.add(root);
-        List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(beginSpan.getSpanId())).toList();
-        for (Span span : spanList) {
-            Vertex child = createTree(span, spans, vertices, edges);
-            if (span.getPath().equals(ModelConstants.DATABASE_NAME)) {
-                edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, root, child));
-            } else {
-                edges.add(new Edge(span.getPath(), span.getTags().getMethod(), root, child));
-            }
-        }
+        spans.remove(beginSpan);
+        spans.remove(clientSpan);
+
+        createTree(root, beginSpan, spans, vertices, edges);
 
         return new Trace(vertices, edges);
     }
 
-    private Vertex createTree(Span span, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
-        Vertex root;
-        if (span.getPath().equals(ModelConstants.DATABASE_NAME)) {
-            root = new Vertex(span.getSpanId(), ModelConstants.DATABASE_NAME);
-        } else {
-            root = new Vertex(span.getSpanId(), span.getLocalEndpoint().getServiceName());
-        }
-        vertices.add(root);
-        List<Span> spanList = spans.stream().filter(span1 -> span1.getParentId().equals(span.getSpanId())).toList();
-        mutateMap(span);
+    private void createTree(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
+        List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(parentSpan.getSpanId())).toList();
+
         for (Span childSpan : spanList) {
-            Vertex child = createTree(childSpan, spans, vertices, edges);
+            Vertex child;
             if (childSpan.getPath().equals(ModelConstants.DATABASE_NAME)) {
-                edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, root, child));
+                child = new Vertex(childSpan.getSpanId(), ModelConstants.DATABASE_NAME);
             } else {
-                edges.add(new Edge(childSpan.getPath(), childSpan.getTags().getMethod(), root, child));
+                child = new Vertex(childSpan.getSpanId(), childSpan.getLocalEndpoint().getServiceName());
             }
+
+            if (parent.getName().equals(child.getName())) {
+                // Merge child vertex into parent vertex
+                vertices.remove(child);
+                child = parent;
+            } else {
+                vertices.add(child);
+            }
+
+            if (!child.equals(parent)) {
+                mutateMap(childSpan);
+                // Add edge if child vertex is not the same as parent vertex
+                if (childSpan.getPath().equals(ModelConstants.DATABASE_NAME)) {
+                    edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, parent, child));
+                } else {
+                    edges.add(new Edge(childSpan.getPath(), childSpan.getTags().getMethod(), parent, child));
+                }
+            }
+
+            createTree(child, childSpan, spans, vertices, edges);
         }
-        return root;
     }
 
-    public List<Trace> getSubGraphs(Trace trace, Set<String> methods) {
+    private List<Trace> getSubGraphs(Trace trace, Set<String> methods) {
         Set<Edge> filteredEdges = new HashSet<>();
         for (Edge edge : trace.getEdges()) {
             if (methods.contains(edge.getMethod())) {
