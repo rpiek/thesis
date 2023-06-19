@@ -24,8 +24,6 @@ public class TraceService {
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
     private final Map<String, Set<String>> writeEndpointMap = new HashMap<>();
 
-    private final Set<String> spanIdSet = new HashSet<>();
-
     Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.GET_STRING));
     Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.POST_STRING, ModelConstants.PUT_STRING));
 
@@ -44,7 +42,7 @@ public class TraceService {
         return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
     }
 
-    public Trace getTree(List<Span> spans) {
+    private Trace getTree(List<Span> spans) {
         Set<Vertex> vertices = new HashSet<>();
         Set<Edge> edges = new HashSet<>();
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).findFirst().orElse(null);
@@ -76,17 +74,17 @@ public class TraceService {
                 child = new Vertex(childSpan.getSpanId(), childSpan.getLocalEndpoint().getServiceName());
             }
 
+            // Check if child vertex equals the name of the parent vertex
             if (parent.getName().equals(child.getName())) {
                 // Merge child vertex into parent vertex
-                vertices.remove(child);
                 child = parent;
             } else {
                 vertices.add(child);
             }
 
+            // Add edge if child vertex is not the same as parent vertex
             if (!child.equals(parent)) {
                 mutateMap(childSpan);
-                // Add edge if child vertex is not the same as parent vertex
                 if (childSpan.getPath().equals(ModelConstants.DATABASE_NAME)) {
                     edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, parent, child));
                 } else {
@@ -100,6 +98,7 @@ public class TraceService {
 
     private List<Trace> getSubGraphs(Trace trace, Set<String> methods) {
         Set<Edge> filteredEdges = new HashSet<>();
+        // Put in all edges were the method equals the given set of allowed methods
         for (Edge edge : trace.getEdges()) {
             if (methods.contains(edge.getMethod())) {
                 filteredEdges.add(edge);
@@ -112,6 +111,7 @@ public class TraceService {
         Set<Vertex> visitedVertices = new HashSet<>();
 
         for (Vertex vertex : filteredTrace.getVertices()) {
+            // Check if we did not visit the vertex
             if (!visitedVertices.contains(vertex)) {
                 Set<Vertex> connectedVertices = new HashSet<>();
                 Set<Edge> connectedEdges = new HashSet<>();
@@ -119,6 +119,7 @@ public class TraceService {
                 performDFS(vertex, filteredTrace, visitedVertices, connectedVertices, connectedEdges);
 
                 Trace connectedGraph = new Trace(connectedVertices, connectedEdges);
+                // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
                 if (connectedGraph.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
                     connectedGraphs.add(connectedGraph);
                 }
@@ -133,13 +134,17 @@ public class TraceService {
         connectedVertices.add(vertex);
 
         for (Edge edge : trace.getEdges()) {
+            // If connected, the vertex should be in the source or the target of an edge
             if (edge.getSource().equals(vertex) || edge.getTarget().equals(vertex)) {
                 connectedEdges.add(edge);
+                // Return either the source or the target of the edge as the adjacent vertex
                 Vertex adjacentVertex = (edge.getSource().equals(vertex)) ? edge.getTarget() : edge.getSource();
+                // If we haven't visited this adjacent vertex, perform DFS on this as well
                 if (!visited.contains(adjacentVertex)) {
                     performDFS(adjacentVertex, trace, visited, connectedVertices, connectedEdges);
                 }
             }
+
         }
     }
 

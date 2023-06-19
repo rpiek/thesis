@@ -1,5 +1,7 @@
 package com.rowan.thesis.thesis_analysis.service;
 
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedMetric;
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedScore;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
@@ -67,24 +69,26 @@ public class DataDependencyService {
     }
 
     private double dataDependsOnEndpoint(String serviceName, String endpoint, List<Trace> traces, DataDependsType dataDependsType) {
-        ArrayList<Integer> valuesPerService = new ArrayList<>();
+        Map<String, Integer> valuesPerService = new HashMap<>();
 
         for (String serviceCallee : services) {
             if (!serviceCallee.equals(serviceName)) {
-                int value = reachableDependencies(serviceName, endpoint, traces, valuesPerService, serviceCallee);
-                valuesPerService.add(value);
+                int value = reachableDependencies(serviceName, endpoint, traces, serviceCallee);
+                if (value != 0) {
+                    valuesPerService.put(serviceCallee, value);
+                }
             }
         }
 
-        double result = euclidianNorm(valuesPerService);
-        results.add(new DataDependsMetric(dataDependsType, serviceName, endpoint, result));
+        double result = euclidianNorm(valuesPerService.values().stream().toList());
+        results.add(new DataDependsMetric(dataDependsType, serviceName, endpoint, valuesPerService, result));
 
         return result;
     }
-    private int reachableDependencies(String serviceName, String endpoint, List<Trace> traces, ArrayList<Integer> valuesPerService, String serviceCallee) {
+    private int reachableDependencies(String serviceName, String endpoint, List<Trace> traces, String serviceCallee) {
         int value = 0;
         for (Trace trace : traces) {
-            List<Vertex> vertices = findApplicableVertices(trace, serviceCallee, endpoint, serviceName);
+            Set<Vertex> vertices = findApplicableVertices(trace, serviceCallee, endpoint, serviceName);
             for (Vertex vertex : vertices) {
                 int intraDataDependency = intraDataDependency(vertex, trace);
                 Set<Vertex> vertexSet = findLongestPath(vertex, trace);
@@ -94,15 +98,15 @@ public class DataDependencyService {
         return value;
     }
 
-    private List<Vertex> findApplicableVertices(Trace trace, String sourceName, String endpoint, String targetName) {
+    private Set<Vertex> findApplicableVertices(Trace trace, String sourceName, String endpoint, String targetName) {
         List<Edge> edges = trace.getEdges().stream().filter(edge -> edge.getSource().getName().equals(sourceName) &&
                                                                     edge.getEndpoint().equals(endpoint) &&
                                                                     edge.getTarget().getName().equals(targetName)).toList();
 
-        return edges.stream().map(Edge::getTarget).collect(Collectors.toList());
+        return edges.stream().map(Edge::getTarget).collect(Collectors.toSet());
     }
 
-    private double euclidianNorm(ArrayList<Integer> values) {
+    private double euclidianNorm(List<Integer> values) {
         double sum = 0.0;
 
         for (int value : values) {
@@ -145,6 +149,27 @@ public class DataDependencyService {
         visited.remove(currentVertex);
     }
 
+    private DataDependsNeedMetric DataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+        DataDependsNeedMetric dataDependsNeedMetric = new DataDependsNeedMetric(serviceName, dataDependsType, 0, new HashSet<>());
+
+        for (String service : services) {
+            if (!service.equals(serviceName)) {
+                for (String endpoint : map.get(service)) {
+                    int result = 0;
+                    for (Trace trace : traces) {
+                        Set<Vertex> vertexSet = findApplicableVertices(trace, serviceName, endpoint, service);
+                        for (Vertex vertex : vertexSet) {
+                            result += intraDataDependency(vertex, trace);
+                        }
+                    }
+                    dataDependsNeedMetric.addScore(new DataDependsNeedScore(service, endpoint, result));
+                }
+            }
+        }
+
+        return dataDependsNeedMetric;
+    }
+
     private void setLocalState(Model model) {
         results.clear();
         services.clear();
@@ -156,9 +181,7 @@ public class DataDependencyService {
                 .flatMap(trace -> trace.getVertices().stream())
                 .map(Vertex::getName)
                 .collect(Collectors.toSet()));
-        if (services.contains(ModelConstants.DATABASE_NAME)) {
-            services.remove(ModelConstants.DATABASE_NAME);
-        }
+        services.remove(ModelConstants.DATABASE_NAME);
     }
 
 }
