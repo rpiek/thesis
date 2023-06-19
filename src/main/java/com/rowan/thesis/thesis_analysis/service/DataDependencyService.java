@@ -30,13 +30,16 @@ public class DataDependencyService {
         setLocalState(model);
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
+        List<DataDependsNeedMetric> dataDependsNeedMetrics = new ArrayList<>();
 
         for (String service : services) {
             dataDependsReadMap.put(service, dataDepends(service, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
             dataDependsWriteMap.put(service, dataDepends(service, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            dataDependsNeedMetrics.add(getDataDependsNeedMetric(model.getReadTraces(), service, model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            dataDependsNeedMetrics.add(getDataDependsNeedMetric(model.getWriteTraces(), service, model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
         }
 
-        return new Result(dataDependsReadMap, dataDependsWriteMap, results, new ArrayList<>());
+        return new Result(dataDependsReadMap, dataDependsWriteMap, results, dataDependsNeedMetrics);
     }
 
     public Result getDataDependsReadScore(Model model) {
@@ -149,21 +152,32 @@ public class DataDependencyService {
         visited.remove(currentVertex);
     }
 
-    private DataDependsNeedMetric DataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+    public DataDependsNeedMetric getDataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
         DataDependsNeedMetric dataDependsNeedMetric = new DataDependsNeedMetric(serviceName, dataDependsType, 0, new HashSet<>());
+        int sum = 0;
 
         for (String service : services) {
-            if (!service.equals(serviceName)) {
+            if (!service.equals(serviceName) && map.containsKey(service)) {
                 for (String endpoint : map.get(service)) {
-                    int result = 0;
+                    double result = 0.0;
                     for (Trace trace : traces) {
                         Set<Vertex> vertexSet = findApplicableVertices(trace, serviceName, endpoint, service);
                         for (Vertex vertex : vertexSet) {
                             result += intraDataDependency(vertex, trace);
                         }
                     }
+                    sum += result;
                     dataDependsNeedMetric.addScore(new DataDependsNeedScore(service, endpoint, result));
                 }
+            }
+        }
+
+        dataDependsNeedMetric.setSum(sum);
+
+        if (sum != 0) {
+            for (DataDependsNeedScore dataDependsNeedScore : dataDependsNeedMetric.getScores()) {
+                int val = (int) dataDependsNeedScore.getValue();
+                dataDependsNeedScore.setValue((double) val / sum);
             }
         }
 

@@ -9,6 +9,6 @@ public class DataDependsNeedScore {
 
     private String target;
     private String endpoint;
-    private int value;
+    private double value;
 
 }

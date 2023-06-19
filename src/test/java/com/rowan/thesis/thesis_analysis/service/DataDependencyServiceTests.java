@@ -1,6 +1,8 @@
 package com.rowan.thesis.thesis_analysis.service;
 
 import com.rowan.thesis.thesis_analysis.helper.ExampleTraces;
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedMetric;
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedScore;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
@@ -8,12 +10,13 @@ import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -99,8 +102,24 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service2", 2.0);
         dataDependsWriteMap.put("service3", 2.0);
         dataDependsWriteMap.put("service4", 0.0);
+        DataDependsNeedMetric dataDependsNeedMetricRead1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_READ, 0, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricWrite1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricRead2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_READ, 2, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricWrite2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_WRITE, 2, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricRead3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_READ, 0, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricWrite3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricRead4 = new DataDependsNeedMetric("service4", DataDependsType.DATA_DEPENDS_READ, 1, new HashSet<>());
+        DataDependsNeedMetric dataDependsNeedMetricWrite4 = new DataDependsNeedMetric("service4", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
+        DataDependsNeedScore dataDependsNeedScore1 = new DataDependsNeedScore("service4", "z", 1.0);
+        dataDependsNeedMetricRead3.addScore(dataDependsNeedScore1);
+        DataDependsNeedScore dataDependsNeedScore2 = new DataDependsNeedScore("service2", "x", 1.0);
+        dataDependsNeedMetricWrite1.addScore(dataDependsNeedScore2);
+        DataDependsNeedScore dataDependsNeedScore3 = new DataDependsNeedScore("service3", "y", 1.0);
+        dataDependsNeedMetricWrite2.addScore(dataDependsNeedScore3);
 
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
+        List<DataDependsNeedMetric> dataDependsNeedMetricList = List.of(dataDependsNeedMetricRead1, dataDependsNeedMetricWrite1, dataDependsNeedMetricRead2, dataDependsNeedMetricWrite2, dataDependsNeedMetricRead3, dataDependsNeedMetricWrite3, dataDependsNeedMetricRead4, dataDependsNeedMetricWrite4);
+
+        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, dataDependsNeedMetricList);
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_read_trace())), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_write_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map()));
 

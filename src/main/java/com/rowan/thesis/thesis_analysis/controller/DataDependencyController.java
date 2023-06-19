@@ -27,7 +27,7 @@ public class DataDependencyController {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
 
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 //    @PostMapping("/analyze/DataDependsRead")
