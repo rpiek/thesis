@@ -30,16 +30,13 @@ public class DataDependencyService {
         setLocalState(model);
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
-        List<DataDependsNeedMetric> dataDependsNeedMetrics = new ArrayList<>();
 
         for (String service : services) {
             dataDependsReadMap.put(service, dataDepends(service, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
             dataDependsWriteMap.put(service, dataDepends(service, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
-            dataDependsNeedMetrics.add(getDataDependsNeedMetric(model.getReadTraces(), service, model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
-            dataDependsNeedMetrics.add(getDataDependsNeedMetric(model.getWriteTraces(), service, model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
         }
 
-        return new Result(dataDependsReadMap, dataDependsWriteMap, results, dataDependsNeedMetrics);
+        return new Result(dataDependsReadMap, dataDependsWriteMap, new ArrayList<>(results), new ArrayList<>());
     }
 
     public Result getDataDependsReadScore(Model model) {
@@ -152,7 +149,18 @@ public class DataDependencyService {
         visited.remove(currentVertex);
     }
 
-    public DataDependsNeedMetric getDataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+    public List<DataDependsNeedMetric> calculateDataDependsNeedMetrics(Model model) {
+        setLocalState(model);
+        List<DataDependsNeedMetric> result = new ArrayList<>();
+        for (String service : services) {
+            result.add(getDataDependsNeedMetric(model.getReadTraces(), service, model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            result.add(getDataDependsNeedMetric(model.getWriteTraces(), service, model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+        }
+
+        return result;
+    }
+
+    private DataDependsNeedMetric getDataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
         DataDependsNeedMetric dataDependsNeedMetric = new DataDependsNeedMetric(serviceName, dataDependsType, 0, new HashSet<>());
         int sum = 0;
 
@@ -166,8 +174,10 @@ public class DataDependencyService {
                             result += intraDataDependency(vertex, trace);
                         }
                     }
-                    sum += result;
-                    dataDependsNeedMetric.addScore(new DataDependsNeedScore(service, endpoint, result));
+                    if (result != 0) {
+                        sum += result;
+                        dataDependsNeedMetric.addScore(new DataDependsNeedScore(service, endpoint, result));
+                    }
                 }
             }
         }

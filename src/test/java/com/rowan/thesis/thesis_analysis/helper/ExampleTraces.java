@@ -273,6 +273,105 @@ public class ExampleTraces {
         return map;
     }
 
+    public static List<Trace> Get_example_read_traces_short() {
+        Vertex vertex1 = new Vertex("1", "service1");
+        Vertex vertex2 = new Vertex("2", "database");
+        Vertex vertex3 = new Vertex("3", "service2");
+        Vertex vertex4 = new Vertex("4", "database");
+        Vertex vertex5 = new Vertex("5", "database");
+        Vertex vertex6 = new Vertex("6", "service3");
+        Vertex vertex7 = new Vertex("7", "database");
+
+        Set<Edge> edgeSet1 = new HashSet<>();
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("i1", ModelConstants.GET_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+
+
+        Set<Vertex> vertexSet1 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
+        Trace trace1 = new Trace(vertexSet1, edgeSet1);
+
+        Set<Edge> edgeSet2 = new HashSet<>();
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet2.add(new Edge("i2", ModelConstants.GET_STRING, vertex1, vertex3));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+
+
+        Set<Vertex> vertexSet2 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
+        Trace trace2 = new Trace(vertexSet2, edgeSet2);
+
+        Set<Edge> edgeSet3 = new HashSet<>();
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet3.add(new Edge("i3", ModelConstants.GET_STRING, vertex3, vertex6));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex6, vertex6));
+
+
+        Set<Vertex> vertexSet3 = Set.of(vertex3, vertex4, vertex5, vertex6, vertex7);
+        Trace trace3 = new Trace(vertexSet3, edgeSet3);
+
+        return List.of(trace1, trace2, trace3);
+    }
+
+    public static List<Trace> Get_example_write_traces_short() {
+        Vertex vertex1 = new Vertex("1", "service1");
+        Vertex vertex2 = new Vertex("2", "database");
+        Vertex vertex3 = new Vertex("3", "service2");
+        Vertex vertex4 = new Vertex("4", "database");
+        Vertex vertex5 = new Vertex("5", "database");
+        Vertex vertex6 = new Vertex("6", "service3");
+        Vertex vertex7 = new Vertex("7", "database");
+
+        Set<Edge> edgeSet1 = new HashSet<>();
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("i4", ModelConstants.POST_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+
+
+        Set<Vertex> vertexSet1 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
+        Trace trace1 = new Trace(vertexSet1, edgeSet1);
+
+        Set<Edge> edgeSet2 = new HashSet<>();
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet2.add(new Edge("i4", ModelConstants.POST_STRING, vertex1, vertex3));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+
+
+        Set<Vertex> vertexSet2 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
+        Trace trace2 = new Trace(vertexSet2, edgeSet2);
+
+        Set<Edge> edgeSet3 = new HashSet<>();
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet3.add(new Edge("i5", ModelConstants.POST_STRING, vertex3, vertex6));
+
+
+        Set<Vertex> vertexSet3 = Set.of(vertex3, vertex4, vertex5, vertex6, vertex7);
+        Trace trace3 = new Trace(vertexSet3, edgeSet3);
+
+        return List.of(trace1, trace2, trace3);
+    }
+
+    public static Map<String, Set<String>> Get_example_parallel_read_trace_endpoint_map_short() {
+        Map<String, Set<String>> map = new HashMap<>();
+
+        map.put("service2", new HashSet<>(Set.of("i1", "i2")));
+        map.put("service3", new HashSet<>(Collections.singleton("i3")));
+
+        return map;
+    }
+
+    public static Map<String, Set<String>> Get_example_parallel_write_trace_endpoint_map_short() {
+        Map<String, Set<String>> map = new HashMap<>();
+
+        map.put("service2", new HashSet<>(Collections.singleton("i4")));
+        map.put("service3", new HashSet<>(Collections.singleton("i5")));
+
+        return map;
+    }
+
 
 //    public static Node Get_example_parallel_trace() {
 //        Vertex root = new Vertex("service1", new ArrayList<>());

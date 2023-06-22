@@ -1,10 +1,10 @@
 package com.rowan.thesis.thesis_analysis.service;
 
 import com.rowan.thesis.thesis_analysis.helper.ExampleTraces;
+import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsNeedScore;
 import com.rowan.thesis.thesis_analysis.model.metric.DataDependsType;
-import com.rowan.thesis.thesis_analysis.model.metric.DataDependsMetric;
 import com.rowan.thesis.thesis_analysis.model.metric.Result;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,24 +103,8 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service2", 2.0);
         dataDependsWriteMap.put("service3", 2.0);
         dataDependsWriteMap.put("service4", 0.0);
-        DataDependsNeedMetric dataDependsNeedMetricRead1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_READ, 0, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricWrite1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricRead2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_READ, 2, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricWrite2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_WRITE, 2, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricRead3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_READ, 0, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricWrite3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricRead4 = new DataDependsNeedMetric("service4", DataDependsType.DATA_DEPENDS_READ, 1, new HashSet<>());
-        DataDependsNeedMetric dataDependsNeedMetricWrite4 = new DataDependsNeedMetric("service4", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
-        DataDependsNeedScore dataDependsNeedScore1 = new DataDependsNeedScore("service4", "z", 1.0);
-        dataDependsNeedMetricRead3.addScore(dataDependsNeedScore1);
-        DataDependsNeedScore dataDependsNeedScore2 = new DataDependsNeedScore("service2", "x", 1.0);
-        dataDependsNeedMetricWrite1.addScore(dataDependsNeedScore2);
-        DataDependsNeedScore dataDependsNeedScore3 = new DataDependsNeedScore("service3", "y", 1.0);
-        dataDependsNeedMetricWrite2.addScore(dataDependsNeedScore3);
 
-        List<DataDependsNeedMetric> dataDependsNeedMetricList = List.of(dataDependsNeedMetricRead1, dataDependsNeedMetricWrite1, dataDependsNeedMetricRead2, dataDependsNeedMetricWrite2, dataDependsNeedMetricRead3, dataDependsNeedMetricWrite3, dataDependsNeedMetricRead4, dataDependsNeedMetricWrite4);
-
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, dataDependsNeedMetricList);
+        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_read_trace())), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_write_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map()));
 
@@ -156,7 +141,6 @@ public class DataDependencyServiceTests {
         dataDependsReadMap.put("service3", 0.0);
         dataDependsReadMap.put("service4", 2.0);
         dataDependsReadMap.put("service5", 0.0);
-
         dataDependsWriteMap.put("service1", 0.0);
         dataDependsWriteMap.put("service2", 0.0);
         dataDependsWriteMap.put("service3", 1.0);
@@ -200,7 +184,6 @@ public class DataDependencyServiceTests {
         dataDependsReadMap.put("service3", 2.0);
         dataDependsReadMap.put("service4", 2.0);
         dataDependsReadMap.put("service5", 0.0);
-
         dataDependsWriteMap.put("service1", 0.0);
         dataDependsWriteMap.put("service2", 0.0);
         dataDependsWriteMap.put("service3", 0.0);
@@ -210,6 +193,37 @@ public class DataDependencyServiceTests {
         Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace_with_dup(), ExampleTraces.Get_example_parallel_write_trace_with_dup(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_with_dup(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_with_dup()));
+
+        Assertions.assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .isEqualTo(expected);
+    }
+
+    @Test
+    public void Test_get_data_depends_need() {
+        DataDependsNeedScore dataDependsNeedScore = new DataDependsNeedScore("service2", "i1", 0.6666666666666666);
+        DataDependsNeedScore dataDependsNeedScore2 = new DataDependsNeedScore("service2", "i2", 0.3333333333333333);
+        Set<DataDependsNeedScore> dataDependsNeedScoreSet1 = Set.of(dataDependsNeedScore, dataDependsNeedScore2);
+        DataDependsNeedMetric dataDependsNeedMetricRead1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_READ, 3, dataDependsNeedScoreSet1);
+
+        DataDependsNeedScore dataDependsNeedScore3 = new DataDependsNeedScore("service3", "i3", 1.0);
+        Set<DataDependsNeedScore> dataDependsNeedScoreSet2 = Set.of(dataDependsNeedScore3);
+        DataDependsNeedMetric dataDependsNeedMetricRead2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_READ, 1, dataDependsNeedScoreSet2);
+
+        DataDependsNeedMetric dataDependsNeedMetricRead3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_READ, 0, new HashSet<>());
+
+        DataDependsNeedScore dataDependsNeedScore4 = new DataDependsNeedScore("service2", "i4", 1.0);
+        Set<DataDependsNeedScore> dataDependsNeedScoreSet3 = Set.of(dataDependsNeedScore4);
+        DataDependsNeedMetric dataDependsNeedMetricWrite1 = new DataDependsNeedMetric("service1", DataDependsType.DATA_DEPENDS_WRITE, 3, dataDependsNeedScoreSet3);
+
+        DataDependsNeedMetric dataDependsNeedMetricWrite2 = new DataDependsNeedMetric("service2", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
+
+        DataDependsNeedMetric dataDependsNeedMetricWrite3 = new DataDependsNeedMetric("service3", DataDependsType.DATA_DEPENDS_WRITE, 0, new HashSet<>());
+
+        List<DataDependsNeedMetric> expected = List.of(dataDependsNeedMetricRead1, dataDependsNeedMetricRead2, dataDependsNeedMetricWrite1, dataDependsNeedMetricWrite2, dataDependsNeedMetricRead3 ,dataDependsNeedMetricWrite3);
+
+        List<DataDependsNeedMetric> actual = dataDependencyService.calculateDataDependsNeedMetrics(new Model(ExampleTraces.Get_example_read_traces_short(), ExampleTraces.Get_example_write_traces_short(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_short(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_short()));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()

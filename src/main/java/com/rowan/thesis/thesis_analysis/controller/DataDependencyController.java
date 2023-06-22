@@ -5,6 +5,8 @@ import com.rowan.thesis.thesis_analysis.model.metric.Result;
 import com.rowan.thesis.thesis_analysis.model.trace.Model;
 import com.rowan.thesis.thesis_analysis.service.DataDependencyService;
 import com.rowan.thesis.thesis_analysis.service.TraceService;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,25 +28,34 @@ public class DataDependencyController {
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
+        result.setDataDependsNeedMetrics(dataDependencyService.calculateDataDependsNeedMetrics(model));
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-//    @PostMapping("/analyze/DataDependsRead")
-//    public @ResponseBody ResponseEntity<Result> calculateDataDependsRead(@RequestBody List<List<Span>> traces) {
-//        Model model = traceService.tracesToModel(traces);
-////        Result result = dataDependencyService.getDataDependsScore(model);
-//
-//        return new ResponseEntity<>(result, HttpStatus.OK);
-//    }
-//
-//    @PostMapping("/analyze/dataDependsWrite")
-//    public @ResponseBody ResponseEntity<Result> calculateDataDependsWrite(@RequestBody List<List<Span>> traces) {
-//        Model model = traceService.tracesToModel(traces);
-////        Result result = dataDependencyService.getDataDependsScore(model);
-//
-//        return new ResponseEntity<>(result, HttpStatus.OK);
-//    }
+    @PostMapping("/analyze/data-depends-read")
+    public @ResponseBody ResponseEntity<Result> calculateDataDependsRead(@RequestBody List<List<Span>> traces) {
+        Model model = traceService.tracesToModel(traces);
+        Result result = dataDependencyService.getDataDependsScore(model);
 
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PostMapping("/analyze/data-depends-write")
+    public @ResponseBody ResponseEntity<Result> calculateDataDependsWrite(@RequestBody List<List<Span>> traces) {
+        Model model = traceService.tracesToModel(traces);
+        Result result = dataDependencyService.getDataDependsScore(model);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PostMapping("/analyze/data-depends-need")
+    public @ResponseBody ResponseEntity<Result> calculateDataDependsNeed(@RequestBody List<List<Span>> traces) {
+        Model model = traceService.tracesToModel(traces);
+        Result result = new Result(new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+        result.setDataDependsNeedMetrics(dataDependencyService.calculateDataDependsNeedMetrics(model));
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
 }
