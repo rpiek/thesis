@@ -69,12 +69,13 @@ public class DataDependencyService {
     }
 
     private double dataDependsOnEndpoint(String serviceName, String endpoint, List<Trace> traces, DataDependsType dataDependsType) {
-        Map<String, Integer> valuesPerService = new HashMap<>();
+        Map<String, Double> valuesPerService = new HashMap<>();
 
         for (String serviceCallee : services) {
             if (!serviceCallee.equals(serviceName)) {
-                int value = reachableDependencies(serviceName, endpoint, traces, serviceCallee);
+                double value = reachableDependencies(serviceName, endpoint, traces, serviceCallee);
                 if (value != 0) {
+                    value = value / traces.size();
                     valuesPerService.put(serviceCallee, value);
                 }
             }
@@ -85,7 +86,7 @@ public class DataDependencyService {
 
         return result;
     }
-    private int reachableDependencies(String serviceName, String endpoint, List<Trace> traces, String serviceCallee) {
+    private double reachableDependencies(String serviceName, String endpoint, List<Trace> traces, String serviceCallee) {
         int value = 0;
         for (Trace trace : traces) {
             Set<Vertex> vertices = findApplicableVertices(trace, serviceCallee, endpoint, serviceName);
@@ -106,10 +107,10 @@ public class DataDependencyService {
         return edges.stream().map(Edge::getTarget).collect(Collectors.toSet());
     }
 
-    private double euclidianNorm(List<Integer> values) {
+    private double euclidianNorm(List<Double> values) {
         double sum = 0.0;
 
-        for (int value : values) {
+        for (double value : values) {
             sum += value * value;
         }
 

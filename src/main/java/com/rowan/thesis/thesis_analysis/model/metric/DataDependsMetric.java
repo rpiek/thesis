@@ -11,7 +11,7 @@ public class DataDependsMetric {
     private DataDependsType type;
     private String service;
     private String endpoint;
-    private Map<String, Integer> serviceMap;
+    private Map<String, Double> serviceMap;
     private double value;
 
 }
