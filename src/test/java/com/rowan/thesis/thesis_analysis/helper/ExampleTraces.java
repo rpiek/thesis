@@ -24,11 +24,11 @@ public class ExampleTraces {
         Vertex vertex1 = new Vertex("2","service2");
         Vertex vertex2 = new Vertex("3", "service3");
 
-        edges.add(new Edge("x", ModelConstants.GET_STRING, root, vertex1));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
-        edges.add(new Edge("y", ModelConstants.GET_STRING, vertex1, vertex2));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
+        edges.add(new Edge("x", ModelConstants.READ_STRING, root, vertex1));
+        edges.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
+        edges.add(new Edge("y", ModelConstants.READ_STRING, vertex1, vertex2));
+        edges.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
+        edges.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
 
         Set<Vertex> vertexSet = Set.of(root, vertex1, vertex2);
 
@@ -42,11 +42,11 @@ public class ExampleTraces {
         Vertex vertex1 = new Vertex("2","service2");
         Vertex vertex2 = new Vertex("3", "service3");
 
-        edges.add(new Edge("x", ModelConstants.POST_STRING, root, vertex1));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
-        edges.add(new Edge("y", ModelConstants.POST_STRING, vertex1, vertex2));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
+        edges.add(new Edge("x", ModelConstants.WRITE_STRING, root, vertex1));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
+        edges.add(new Edge("y", ModelConstants.WRITE_STRING, vertex1, vertex2));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
 
         Set<Vertex> vertexSet = Set.of(root, vertex1, vertex2);
 
@@ -70,9 +70,9 @@ public class ExampleTraces {
 
         Set<Edge> edges = new HashSet<>();
 
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
-        edges.add(new Edge("z", ModelConstants.GET_STRING, vertex2, vertex3));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, DATABASE_VERTEX));
+        edges.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
+        edges.add(new Edge("z", ModelConstants.READ_STRING, vertex2, vertex3));
+        edges.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, DATABASE_VERTEX));
 
         Set<Vertex> vertexSet = Set.of(vertex1, vertex2, vertex3);
 
@@ -86,12 +86,12 @@ public class ExampleTraces {
 
         Set<Edge> edges = new HashSet<>();
 
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
-        edges.add(new Edge("x", ModelConstants.POST_STRING, root, vertex1));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, root, DATABASE_VERTEX));
+        edges.add(new Edge("x", ModelConstants.WRITE_STRING, root, vertex1));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
         edges.add(new Edge(ModelConstants.DATABASE_NAME + "1", ModelConstants.DATABASE_NAME, vertex1, DATABASE_VERTEX));
-        edges.add(new Edge("y", ModelConstants.POST_STRING, vertex1, vertex2));
-        edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
+        edges.add(new Edge("y", ModelConstants.WRITE_STRING, vertex1, vertex2));
+        edges.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex2, DATABASE_VERTEX));
 
         Set<Vertex> vertexSet = Set.of(root, vertex1);
 
@@ -130,21 +130,21 @@ public class ExampleTraces {
 
         Set<Edge> edgeSet1 = new HashSet<>();
 
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet1.add(new Edge("y", ModelConstants.GET_STRING, vertex1, vertex3));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
-        edgeSet1.add(new Edge("y", ModelConstants.GET_STRING, vertex3, vertex10));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("y", ModelConstants.READ_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet1.add(new Edge("y", ModelConstants.READ_STRING, vertex3, vertex10));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex10, vertex11));
 
         Set<Vertex> vertexSet1 = new HashSet<>(List.of(vertex1, vertex2, vertex3, vertex4, vertex5, vertex10, vertex11));
 
         Trace trace1 = new Trace(vertexSet1, edgeSet1);
 
         Set<Edge> edgeSet2 = new HashSet<>();
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex6, vertex7));
-        edgeSet2.add(new Edge("y", ModelConstants.GET_STRING, vertex6, vertex8));
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex8, vertex9));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex6, vertex7));
+        edgeSet2.add(new Edge("y", ModelConstants.READ_STRING, vertex6, vertex8));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex8, vertex9));
 
         Set<Vertex> vertexSet2 = new HashSet<>(List.of(vertex6, vertex7, vertex8, vertex9));
 
@@ -166,19 +166,19 @@ public class ExampleTraces {
 
         Set<Edge> edgeSet1 = new HashSet<>();
 
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
-        edgeSet1.add(new Edge("z", ModelConstants.PUT_STRING, vertex3, vertex6));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex6, vertex7));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet1.add(new Edge("z", ModelConstants.WRITE_STRING, vertex3, vertex6));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex6, vertex7));
 
         Set<Vertex> vertexSet1 = new HashSet<>(List.of(vertex3, vertex4, vertex5, vertex6, vertex7));
 
         Trace trace1 = new Trace(vertexSet1, edgeSet1);
 
         Set<Edge> edgeSet2 = new HashSet<>();
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
-        edgeSet2.add(new Edge("y", ModelConstants.POST_STRING, vertex10, vertex12));
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex12, vertex13));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet2.add(new Edge("y", ModelConstants.WRITE_STRING, vertex10, vertex12));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex12, vertex13));
 
         Set<Vertex> vertexSet2 = new HashSet<>(List.of(vertex10, vertex11, vertex12, vertex13));
 
@@ -220,16 +220,16 @@ public class ExampleTraces {
 
         Set<Edge> edgeSet = new HashSet<>();
 
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet.add(new Edge("y", ModelConstants.GET_STRING, vertex1, vertex3));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
-        edgeSet.add(new Edge("z", ModelConstants.GET_STRING, vertex3, vertex6));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex6, vertex7));
-        edgeSet.add(new Edge("y", ModelConstants.GET_STRING, vertex6, vertex8));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex8, vertex9));
-        edgeSet.add(new Edge("y", ModelConstants.GET_STRING, vertex3, vertex10));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet.add(new Edge("y", ModelConstants.READ_STRING, vertex1, vertex3));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet.add(new Edge("z", ModelConstants.READ_STRING, vertex3, vertex6));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex6, vertex7));
+        edgeSet.add(new Edge("y", ModelConstants.READ_STRING, vertex6, vertex8));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex8, vertex9));
+        edgeSet.add(new Edge("y", ModelConstants.READ_STRING, vertex3, vertex10));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex10, vertex11));
 
         Set<Vertex> vertexSet = new HashSet<>(List.of(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8, vertex9, vertex10, vertex11));
 
@@ -244,9 +244,9 @@ public class ExampleTraces {
 
 
         Set<Edge> edgeSet = new HashSet<>();
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex10, vertex11));
-        edgeSet.add(new Edge("y", ModelConstants.POST_STRING, vertex10, vertex12));
-        edgeSet.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex12, vertex13));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet.add(new Edge("y", ModelConstants.WRITE_STRING, vertex10, vertex12));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex12, vertex13));
 
         Set<Vertex> vertexSet2 = new HashSet<>(List.of(vertex10, vertex11, vertex12, vertex13));
 
@@ -283,29 +283,29 @@ public class ExampleTraces {
         Vertex vertex7 = new Vertex("7", "database");
 
         Set<Edge> edgeSet1 = new HashSet<>();
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet1.add(new Edge("i1", ModelConstants.GET_STRING, vertex1, vertex3));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("i1", ModelConstants.READ_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
 
 
         Set<Vertex> vertexSet1 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
         Trace trace1 = new Trace(vertexSet1, edgeSet1);
 
         Set<Edge> edgeSet2 = new HashSet<>();
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet2.add(new Edge("i2", ModelConstants.GET_STRING, vertex1, vertex3));
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet2.add(new Edge("i2", ModelConstants.READ_STRING, vertex1, vertex3));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
 
 
         Set<Vertex> vertexSet2 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
         Trace trace2 = new Trace(vertexSet2, edgeSet2);
 
         Set<Edge> edgeSet3 = new HashSet<>();
-        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
-        edgeSet3.add(new Edge("i3", ModelConstants.GET_STRING, vertex3, vertex6));
-        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex6, vertex6));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet3.add(new Edge("i3", ModelConstants.READ_STRING, vertex3, vertex6));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex6, vertex6));
 
 
         Set<Vertex> vertexSet3 = Set.of(vertex3, vertex4, vertex5, vertex6, vertex7);
@@ -324,27 +324,27 @@ public class ExampleTraces {
         Vertex vertex7 = new Vertex("7", "database");
 
         Set<Edge> edgeSet1 = new HashSet<>();
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet1.add(new Edge("i4", ModelConstants.POST_STRING, vertex1, vertex3));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet1.add(new Edge("i4", ModelConstants.WRITE_STRING, vertex1, vertex3));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet1.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex5));
 
 
         Set<Vertex> vertexSet1 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
         Trace trace1 = new Trace(vertexSet1, edgeSet1);
 
         Set<Edge> edgeSet2 = new HashSet<>();
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex1, vertex2));
-        edgeSet2.add(new Edge("i4", ModelConstants.POST_STRING, vertex1, vertex3));
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex1, vertex2));
+        edgeSet2.add(new Edge("i4", ModelConstants.WRITE_STRING, vertex1, vertex3));
+        edgeSet2.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex5));
 
 
         Set<Vertex> vertexSet2 = Set.of(vertex1, vertex2, vertex3, vertex4, vertex5);
         Trace trace2 = new Trace(vertexSet2, edgeSet2);
 
         Set<Edge> edgeSet3 = new HashSet<>();
-        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet3.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, vertex3, vertex5));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex4));
+        edgeSet3.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex3, vertex5));
         edgeSet3.add(new Edge("i5", ModelConstants.POST_STRING, vertex3, vertex6));
 
 

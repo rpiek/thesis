@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,8 +25,8 @@ public class TraceService {
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
     private final Map<String, Set<String>> writeEndpointMap = new HashMap<>();
 
-    Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.GET_STRING));
-    Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.POST_STRING, ModelConstants.PUT_STRING));
+    Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.READ_STRING));
+    Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.WRITE_STRING));
 
 
     public Model tracesToModel(List<List<Span>> spanLists) {
@@ -68,7 +69,7 @@ public class TraceService {
 
         for (Span childSpan : spanList) {
             Vertex child;
-            if (childSpan.getPath().equals(ModelConstants.DATABASE_NAME)) {
+            if (childSpan.getPath().equals(ModelConstants.DATABASE_READ) || childSpan.getPath().equals(ModelConstants.DATABASE_WRITE)) {
                 child = new Vertex(childSpan.getSpanId(), ModelConstants.DATABASE_NAME);
             } else {
                 child = new Vertex(childSpan.getSpanId(), childSpan.getLocalEndpoint().getServiceName());
@@ -85,10 +86,17 @@ public class TraceService {
             // Add edge if child vertex is not the same as parent vertex
             if (!child.equals(parent)) {
                 mutateMap(childSpan);
-                if (childSpan.getPath().equals(ModelConstants.DATABASE_NAME)) {
-                    edges.add(new Edge(ModelConstants.DATABASE_NAME, ModelConstants.DATABASE_NAME, parent, child));
+                if (childSpan.getPath().equals(ModelConstants.DATABASE_READ) || childSpan.getPath().equals(ModelConstants.DATABASE_WRITE)) {
+                    edges.add(new Edge(childSpan.getPath(), ModelConstants.DATABASE_NAME, parent, child));
                 } else {
-                    edges.add(new Edge(childSpan.getPath(), childSpan.getTags().getMethod(), parent, child));
+                    if (childSpan.getTags().getMethod().equals(ModelConstants.POST_STRING) || childSpan.getTags().getMethod().equals(ModelConstants.PUT_STRING)) {
+                        if (spans.stream().anyMatch(span -> span.getParentId().equals(childSpan.getSpanId()) && span.getPath().equals(ModelConstants.DATABASE_WRITE))) {
+                            edges.add(new Edge(childSpan.getPath(), ModelConstants.WRITE_STRING, parent, child));
+                        } else {
+                            edges.add(new Edge(childSpan.getPath(), ModelConstants.READ_STRING, parent, child));
+                        }
+                    }
+                    edges.add(new Edge(childSpan.getPath(), ModelConstants.READ_STRING, parent, child));
                 }
             }
 
