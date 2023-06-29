@@ -11,7 +11,7 @@ public final class ModelConstants {
 
     public static final String WRITE_STRING = "WRITE";
 
-    public static final String POST_READ_STRING = "POST_READ";
+    public static final String SEND_READ_STRING = "SEND_READ";
 
     public static final String DATABASE_READ = "databaseRead";
 

@@ -25,8 +25,8 @@ public class TraceService {
     private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
     private final Map<String, Set<String>> writeEndpointMap = new HashMap<>();
 
-    Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.READ_STRING));
-    Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.WRITE_STRING));
+    Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.READ_STRING));
+    Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.WRITE_STRING));
 
 
     public Model tracesToModel(List<List<Span>> spanLists) {
@@ -93,13 +93,15 @@ public class TraceService {
                         if (spans.stream().anyMatch(span -> span.getParentId().equals(childSpan.getSpanId()) && span.getPath().equals(ModelConstants.DATABASE_WRITE))) {
                             edges.add(new Edge(childSpan.getPath(), ModelConstants.WRITE_STRING, parent, child));
                         } else {
-                            edges.add(new Edge(childSpan.getPath(), ModelConstants.READ_STRING, parent, child));
+                            String serviceName = childSpan.getLocalEndpoint().getServiceName();
+                            fillMap(childSpan, serviceName, readEndpointMap);
+                            edges.add(new Edge(childSpan.getPath(), ModelConstants.SEND_READ_STRING, parent, child));
                         }
+                    } else {
+                        edges.add(new Edge(childSpan.getPath(), ModelConstants.READ_STRING, parent, child));
                     }
-                    edges.add(new Edge(childSpan.getPath(), ModelConstants.READ_STRING, parent, child));
                 }
             }
-
             createTree(child, childSpan, spans, vertices, edges);
         }
     }
@@ -126,9 +128,18 @@ public class TraceService {
 
                 performDFS(vertex, filteredTrace, visitedVertices, connectedVertices, connectedEdges);
 
+                // If we want to create a set of read traces we must filter out the vertices where a post request is made, but where only reads or no
+                // database calls are made
+                if (methods.contains(ModelConstants.WRITE_STRING)) {
+                    Set<Vertex> readSendVertices = connectedEdges.stream().filter(edge -> edge.getMethod().equals(ModelConstants.SEND_READ_STRING)).map(Edge::getTarget).collect(Collectors.toSet());
+                    readSendVertices.forEach(vertex1 -> connectedEdges.removeIf(edge -> edge.getSource() == vertex1 && edge.getMethod().equals(ModelConstants.DATABASE_NAME)) );
+                    connectedVertices.removeIf(vertex1 -> connectedEdges.stream().noneMatch(edge -> edge.getSource().equals(vertex1) || edge.getTarget().equals(vertex1)));
+                }
+
                 Trace connectedGraph = new Trace(connectedVertices, connectedEdges);
+
                 // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
-                if (connectedGraph.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
+                if (connectedGraph.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME)) && connectedGraph.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
                     connectedGraphs.add(connectedGraph);
                 }
             }

@@ -80,7 +80,7 @@
       "parentId": "3",
       "name": "z",
       "localEndpoint": {
-        "serviceName": "service2"
+        "serviceName": "service3"
       },
 
       "tags": {
@@ -96,15 +96,15 @@
         "method": "findById"
       },
       "localEndpoint": {
-        "serviceName": "service2"
+        "serviceName": "service3"
       }
     },
     {
       "id": "8",
       "parentId": "6",
-      "name": "p",
+      "name": "y",
       "localEndpoint": {
-        "serviceName": "service3"
+        "serviceName": "service2"
       },
 
       "tags": {
@@ -120,7 +120,7 @@
         "method": "findById"
       },
       "localEndpoint": {
-        "serviceName": "service3"
+        "serviceName": "service2"
       }
     },
     {
@@ -139,6 +139,7 @@
       "parentId": "10",
       "id": "11",
       "name": "databaseRead",
+
       "tags": {
         "class": "$Proxy154",
         "method": "findById"
