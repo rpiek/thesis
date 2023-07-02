@@ -68,6 +68,7 @@ public class TraceService {
         List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(parentSpan.getSpanId())).toList();
 
         for (Span childSpan : spanList) {
+            if (childSpan.getKind() != null && childSpan.getKind().equals("CLIENT")) continue;
             Vertex child;
             if (childSpan.getPath().equals(ModelConstants.DATABASE_READ) || childSpan.getPath().equals(ModelConstants.DATABASE_WRITE)) {
                 child = new Vertex(childSpan.getSpanId(), ModelConstants.DATABASE_NAME);
