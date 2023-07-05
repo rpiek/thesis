@@ -90,7 +90,7 @@
     {
       "parentId": "6",
       "id": "7",
-      "name": "databaseWrite",
+      "name": "databaseRead",
       "tags": {
         "class": "$Proxy154",
         "method": "findById"
@@ -108,7 +108,7 @@
       },
 
       "tags": {
-        "http.method": "GET"
+        "http.method": "PUT"
       }
     },
     {
@@ -170,6 +170,30 @@
       },
       "localEndpoint": {
         "serviceName": "service5"
+      }
+    },
+    {
+      "id": "14",
+      "parentId": "8",
+      "name": "a",
+      "localEndpoint": {
+        "serviceName": "service6"
+      },
+
+      "tags": {
+        "http.method": "POST"
+      }
+    },
+    {
+      "parentId": "14",
+      "id": "15",
+      "name": "databaseWrite",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "save"
+      },
+      "localEndpoint": {
+        "serviceName": "service6"
       }
     }
   ]

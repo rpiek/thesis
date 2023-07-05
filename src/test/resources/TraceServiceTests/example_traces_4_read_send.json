@@ -90,7 +90,7 @@
     {
       "parentId": "6",
       "id": "7",
-      "name": "databaseWrite",
+      "name": "databaseRead",
       "tags": {
         "class": "$Proxy154",
         "method": "findById"
