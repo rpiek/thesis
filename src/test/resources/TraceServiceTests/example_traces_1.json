@@ -4,7 +4,7 @@
       "traceId": "deaeac66066efe4f",
       "parentId": "deaeac66066efe4f",
       "id": "cfac5441aca32b4d",
-      "name": "databaseRead",
+      "name": "database-read",
       "timestamp": 1684139555537154,
       "duration": 2061,
       "localEndpoint": {
@@ -59,7 +59,7 @@
       "traceId": "deaeac66066efe4f",
       "parentId": "218716907746edb3",
       "id": "9c8123070fc810de",
-      "name": "databaseRead",
+      "name": "database-read",
       "timestamp": 1684139555544302,
       "duration": 3081,
       "localEndpoint": {
