@@ -24,51 +24,53 @@ import org.springframework.stereotype.Service;
 public class DataDependencyService {
 
     ArrayList<DataDependsMetric> results = new ArrayList<>();
-    Set<String> services = new HashSet<>();
 
     public Result getDataDependsScore(Model model) {
-        setLocalState(model);
+        results.clear();
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
+        Set<String> services = getServices(model);
 
         for (String service : services) {
-            dataDependsReadMap.put(service, dataDepends(service, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
-            dataDependsWriteMap.put(service, dataDepends(service, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
         }
 
         return new Result(dataDependsReadMap, dataDependsWriteMap, new ArrayList<>(results), new ArrayList<>());
     }
 
     public Result getDataDependsReadScore(Model model) {
-        setLocalState(model);
+        results.clear();
+        Set<String> services = getServices(model);
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         for (String service : services) {
-            dataDependsReadMap.put(service, dataDepends(service, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
         }
         return new Result(dataDependsReadMap, new HashMap<>(), results, new ArrayList<>());
     }
 
     public Result getDataDependsWriteScore(Model model) {
-        setLocalState(model);
+        results.clear();
+        Set<String> services = getServices(model);
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         for (String service : services) {
-            dataDependsWriteMap.put(service, dataDepends(service, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
         }
         return new Result(new HashMap<>(), dataDependsWriteMap, results, new ArrayList<>());
     }
 
-    private double dataDepends(String serviceName, List<Trace> traces, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+    private double dataDepends(String serviceName, Set<String> services, List<Trace> traces, Map<String, Set<String>> map, DataDependsType dataDependsType) {
         double result = 0;
         if (map.containsKey(serviceName)) {
             for (String path : map.get(serviceName)) {
-                result += dataDependsOnEndpoint(serviceName, path, traces, dataDependsType);
+                result += dataDependsOnEndpoint(serviceName, services, path, traces, dataDependsType);
             }
         }
 
         return result;
     }
 
-    private double dataDependsOnEndpoint(String serviceName, String endpoint, List<Trace> traces, DataDependsType dataDependsType) {
+    private double dataDependsOnEndpoint(String serviceName, Set<String> services, String endpoint, List<Trace> traces, DataDependsType dataDependsType) {
         Map<String, Double> valuesPerService = new HashMap<>();
 
         for (String serviceCallee : services) {
@@ -151,17 +153,18 @@ public class DataDependencyService {
     }
 
     public List<DataDependsNeedMetric> calculateDataDependsNeedMetrics(Model model) {
-        setLocalState(model);
+        results.clear();
+        Set<String> services = getServices(model);
         List<DataDependsNeedMetric> result = new ArrayList<>();
         for (String service : services) {
-            result.add(getDataDependsNeedMetric(model.getReadTraces(), service, model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
-            result.add(getDataDependsNeedMetric(model.getWriteTraces(), service, model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            result.add(getDataDependsNeedMetric(model.getReadTraces(), services, service, model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            result.add(getDataDependsNeedMetric(model.getWriteTraces(), services, service, model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
         }
 
         return result;
     }
 
-    private DataDependsNeedMetric getDataDependsNeedMetric(List<Trace> traces, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+    private DataDependsNeedMetric getDataDependsNeedMetric(List<Trace> traces, Set<String> services, String serviceName, Map<String, Set<String>> map, DataDependsType dataDependsType) {
         DataDependsNeedMetric dataDependsNeedMetric = new DataDependsNeedMetric(serviceName, dataDependsType, 0, new HashSet<>());
         int sum = 0;
 
@@ -195,9 +198,8 @@ public class DataDependencyService {
         return dataDependsNeedMetric;
     }
 
-    private void setLocalState(Model model) {
-        results.clear();
-        services.clear();
+    private Set<String> getServices(Model model) {
+        Set<String> services = new HashSet<>();
         services.addAll(model.getReadTraces().stream()
                 .flatMap(trace -> trace.getVertices().stream())
                 .map(Vertex::getName)
@@ -207,6 +209,8 @@ public class DataDependencyService {
                 .map(Vertex::getName)
                 .collect(Collectors.toSet()));
         services.remove(ModelConstants.DATABASE_NAME);
+
+        return services;
     }
 
 }
