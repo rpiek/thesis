@@ -8,6 +8,8 @@ import com.rowan.thesis.thesis_analysis.service.TraceService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 @RequestMapping("/data-dependency")
 public class DataDependencyController {
 
@@ -26,6 +29,7 @@ public class DataDependencyController {
 
     @PostMapping("/analyze")
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
+        log.info("traces amount: " + traces.size());
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
         result.setDataDependsNeedMetrics(dataDependencyService.calculateDataDependsNeedMetrics(model));

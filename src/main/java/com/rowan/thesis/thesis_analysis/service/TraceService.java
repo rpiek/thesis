@@ -11,10 +11,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -22,22 +20,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class TraceService {
 
-    private final Map<String, Set<String>> readEndpointMap = new HashMap<>();
-    private final Map<String, Set<String>> writeEndpointMap = new HashMap<>();
-
-    Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.READ_STRING));
-    Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.WRITE_STRING));
-
+    final Set<String> readMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.READ_STRING));
+    final Set<String> writeMethods = new HashSet<>(Arrays.asList(ModelConstants.DATABASE_NAME, ModelConstants.SEND_READ_STRING, ModelConstants.WRITE_STRING));
 
     public Model tracesToModel(List<List<Span>> spanLists) {
         List<Trace> readTraces = new ArrayList<>();
         List<Trace> writeTraces = new ArrayList<>();
-        readEndpointMap.clear();
-        writeEndpointMap.clear();
+        Map<String, Set<String>> readEndpointMap = new HashMap<>();
+        Map<String, Set<String>> writeEndpointMap = new HashMap<>();
         for (List<Span> spans : spanLists) {
             final Trace trace = getTree(spans);
-            readTraces.addAll(getSubGraphs(trace, readMethods));
-            writeTraces.addAll(getSubGraphs(trace, writeMethods));
+            List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
+            List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
+            // Add the traces into their respective lists
+            readTraces.addAll(getSubTraces(trace, readMethods));
+            writeTraces.addAll(getSubTraces(trace, writeMethods));
+            // Add the interfaces of the edges into their respective endpoint maps
+            readSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
+            writeSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
         }
 
         return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
@@ -59,16 +59,19 @@ public class TraceService {
         spans.remove(beginSpan);
         spans.remove(clientSpan);
 
-        createTree(root, beginSpan, spans, vertices, edges);
+        createTrace(root, beginSpan, spans, vertices, edges);
 
         return new Trace(vertices, edges);
     }
 
-    private void createTree(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
+    private void createTrace(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
         List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(parentSpan.getSpanId())).toList();
 
         for (Span childSpan : spanList) {
+            // Ignore the client spans from zipkin
+            if (childSpan.getKind() != null && childSpan.getKind().equals("CLIENT")) continue;
             Vertex child;
+            // If it's a database call create a vertex with constant name for databases
             if (childSpan.getPath().equals(ModelConstants.DATABASE_READ) || childSpan.getPath().equals(ModelConstants.DATABASE_WRITE)) {
                 child = new Vertex(childSpan.getSpanId(), ModelConstants.DATABASE_NAME);
             } else {
@@ -85,7 +88,6 @@ public class TraceService {
 
             // Add edge if child vertex is not the same as parent vertex
             if (!child.equals(parent)) {
-                mutateMap(childSpan);
                 if (childSpan.getPath().equals(ModelConstants.DATABASE_READ) || childSpan.getPath().equals(ModelConstants.DATABASE_WRITE)) {
                     edges.add(new Edge(childSpan.getPath(), ModelConstants.DATABASE_NAME, parent, child));
                 } else {
@@ -93,8 +95,6 @@ public class TraceService {
                         if (spans.stream().anyMatch(span -> span.getParentId().equals(childSpan.getSpanId()) && span.getPath().equals(ModelConstants.DATABASE_WRITE))) {
                             edges.add(new Edge(childSpan.getPath(), ModelConstants.WRITE_STRING, parent, child));
                         } else {
-                            String serviceName = childSpan.getLocalEndpoint().getServiceName();
-                            fillMap(childSpan, serviceName, readEndpointMap);
                             edges.add(new Edge(childSpan.getPath(), ModelConstants.SEND_READ_STRING, parent, child));
                         }
                     } else {
@@ -102,11 +102,11 @@ public class TraceService {
                     }
                 }
             }
-            createTree(child, childSpan, spans, vertices, edges);
+            createTrace(child, childSpan, spans, vertices, edges);
         }
     }
 
-    private List<Trace> getSubGraphs(Trace trace, Set<String> methods) {
+    private List<Trace> getSubTraces(Trace trace, Set<String> methods) {
         Set<Edge> filteredEdges = new HashSet<>();
         // Put in all edges were the method equals the given set of allowed methods
         for (Edge edge : trace.getEdges()) {
@@ -121,26 +121,22 @@ public class TraceService {
         Set<Vertex> visitedVertices = new HashSet<>();
 
         for (Vertex vertex : filteredTrace.getVertices()) {
-            // Check if we did not visit the vertex
+            // Check if we did not visit the vertex, to overcome overlapping traces
             if (!visitedVertices.contains(vertex)) {
-                Set<Vertex> connectedVertices = new HashSet<>();
-                Set<Edge> connectedEdges = new HashSet<>();
 
-                performDFS(vertex, filteredTrace, visitedVertices, connectedVertices, connectedEdges);
+                Trace connectedTrace = performDFS(vertex, filteredTrace, visitedVertices, new HashSet<>(), new HashSet<>());
 
                 // If we want to create a set of read traces we must filter out the vertices where a post request is made, but where only reads or no
                 // database calls are made
                 if (methods.contains(ModelConstants.WRITE_STRING)) {
-                    Set<Vertex> readSendVertices = connectedEdges.stream().filter(edge -> edge.getMethod().equals(ModelConstants.SEND_READ_STRING)).map(Edge::getTarget).collect(Collectors.toSet());
-                    readSendVertices.forEach(vertex1 -> connectedEdges.removeIf(edge -> edge.getSource() == vertex1 && edge.getMethod().equals(ModelConstants.DATABASE_NAME)) );
-                    connectedVertices.removeIf(vertex1 -> connectedEdges.stream().noneMatch(edge -> edge.getSource().equals(vertex1) || edge.getTarget().equals(vertex1)));
+                    Set<Vertex> readSendVertices = connectedTrace.getEdges().stream().filter(edge -> edge.getMethod().equals(ModelConstants.SEND_READ_STRING)).map(Edge::getTarget).collect(Collectors.toSet());
+                    readSendVertices.forEach(vertex1 -> connectedTrace.getEdges().removeIf(edge -> edge.getSource() == vertex1 && edge.getMethod().equals(ModelConstants.DATABASE_NAME)) );
+                    connectedTrace.getVertices().removeIf(vertex1 -> connectedTrace.getEdges().stream().noneMatch(edge -> edge.getSource().equals(vertex1) || edge.getTarget().equals(vertex1)));
                 }
 
-                Trace connectedGraph = new Trace(connectedVertices, connectedEdges);
-
                 // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
-                if (connectedGraph.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME)) && connectedGraph.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
-                    connectedGraphs.add(connectedGraph);
+                if (connectedTrace.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
+                    connectedGraphs.add(connectedTrace);
                 }
             }
         }
@@ -148,9 +144,10 @@ public class TraceService {
         return connectedGraphs;
     }
 
-    private static void performDFS(Vertex vertex, Trace trace, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
+    private Trace performDFS(Vertex vertex, Trace trace, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
         visited.add(vertex);
         connectedVertices.add(vertex);
+        Trace connectedTrace = new Trace(new HashSet<>(), new HashSet<>());
 
         for (Edge edge : trace.getEdges()) {
             // If connected, the vertex should be in the source or the target of an edge
@@ -163,29 +160,21 @@ public class TraceService {
                     performDFS(adjacentVertex, trace, visited, connectedVertices, connectedEdges);
                 }
             }
-
         }
+
+        connectedTrace.addVertices(connectedVertices);
+        connectedTrace.addEdges(connectedEdges);
+        return connectedTrace;
     }
 
-    private void mutateMap(Span span) {
-        if (span.getTags() != null && span.getTags().getMethod() != null) {
-            String serviceName = span.getLocalEndpoint().getServiceName();
-            String method = span.getTags().getMethod();
-            if (method.equals(ModelConstants.GET_STRING)) {
-                fillMap(span, serviceName, readEndpointMap);
-            } else if (method.equals(ModelConstants.POST_STRING) || method.equals(ModelConstants.PUT_STRING)) {
-                fillMap(span, serviceName, writeEndpointMap);
-            }
-        }
-    }
-
-    private void fillMap(Span span, String serviceName, Map<String, Set<String>> readEndpointMap) {
-        if (readEndpointMap.containsKey(serviceName)) {
-            Set<String> value = readEndpointMap.get(serviceName);
-            value.add(span.getPath());
-            readEndpointMap.put(serviceName, value);
+    private void fillMap(Edge edge, Map<String, Set<String>> map) {
+        if (edge.getTarget().getName().equals(ModelConstants.DATABASE_NAME)) return;
+        if (map.containsKey(edge.getTarget().getName())) {
+            Set<String> value = map.get(edge.getTarget().getName());
+            value.add(edge.getEndpoint());
+            map.put(edge.getTarget().getName(), value);
         } else {
-            readEndpointMap.put(serviceName, new HashSet<>(Collections.singleton(span.getPath())));
+            map.put(edge.getTarget().getName(), new HashSet<>(Collections.singleton(edge.getEndpoint())));
         }
     }
 

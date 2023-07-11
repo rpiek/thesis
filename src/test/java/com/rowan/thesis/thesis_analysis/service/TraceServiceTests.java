@@ -52,9 +52,9 @@ public class TraceServiceTests {
 
         Set<Vertex> vertexSet = new HashSet<>(List.of(root, databaseRoot, vertex1, databaseVertex1));
 
-        edgeSet.add(new Edge("databaseRead", "database", root, databaseRoot));
+        edgeSet.add(new Edge("database-read", "database", root, databaseRoot));
         edgeSet.add(new Edge("get /api/v1/routeservice/routes/{routeid}", "READ", root, vertex1));
-        edgeSet.add(new Edge("databaseRead", "database", vertex1, databaseVertex1));
+        edgeSet.add(new Edge("database-read", "database", vertex1, databaseVertex1));
 
         return new Trace(vertexSet, edgeSet);
     }

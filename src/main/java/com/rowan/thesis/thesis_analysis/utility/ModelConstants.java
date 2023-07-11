@@ -13,8 +13,8 @@ public final class ModelConstants {
 
     public static final String SEND_READ_STRING = "SEND_READ";
 
-    public static final String DATABASE_READ = "databaseRead";
+    public static final String DATABASE_READ = "database-read";
 
-    public static final String DATABASE_WRITE = "databaseWrite";
+    public static final String DATABASE_WRITE = "database-write";
 
 }
