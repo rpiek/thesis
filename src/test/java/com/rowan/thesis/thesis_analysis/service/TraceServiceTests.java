@@ -227,7 +227,6 @@ public class TraceServiceTests {
         readEndpointMap.put("service2", new HashSet<>(Collections.singleton("y")));
         readEndpointMap.put("service4", new HashSet<>(Collections.singleton("y")));
         readEndpointMap.put("service3", new HashSet<>(Collections.singleton("z")));
-        writeEndpointMap.put("service3", new HashSet<>(Collections.singleton("z")));
         writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
         Model expected = new Model(getReadTracesReadSend(), getWriteTracesReadSend(), readEndpointMap, writeEndpointMap);
 
@@ -271,36 +270,21 @@ public class TraceServiceTests {
     }
 
     private static List<Trace> getWriteTracesReadSend() {
-        Vertex vertex3 = new Vertex("3", "service2");
-        Vertex vertex4 = new Vertex("4", "database");
-        Vertex vertex5 = new Vertex("5", "database");
-        Vertex vertex6 = new Vertex("6", "service3");
-        Vertex vertex7 = new Vertex("7", "database");
         Vertex vertex10 = new Vertex("10", "service4");
         Vertex vertex11 = new Vertex("11", "database");
         Vertex vertex12 = new Vertex("12", "service5");
         Vertex vertex13 = new Vertex("13", "database");
 
-        Set<Edge> edgeSet1 = new HashSet<>();
+        Set<Edge> edgeSet = new HashSet<>();
+        edgeSet.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex10, vertex11));
+        edgeSet.add(new Edge("y", ModelConstants.WRITE_STRING, vertex10, vertex12));
+        edgeSet.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex12, vertex13));
 
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex4));
-        edgeSet1.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex3, vertex5));
-        edgeSet1.add(new Edge("z", ModelConstants.SEND_READ_STRING, vertex3, vertex6));
+        Set<Vertex> vertexSet = new HashSet<>(List.of(vertex10, vertex11, vertex12, vertex13));
 
-        Set<Vertex> vertexSet1 = new HashSet<>(List.of(vertex3, vertex4, vertex5, vertex6));
+        Trace trace = new Trace(vertexSet, edgeSet);
 
-        Trace trace1 = new Trace(vertexSet1, edgeSet1);
-
-        Set<Edge> edgeSet2 = new HashSet<>();
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_READ, ModelConstants.DATABASE_NAME, vertex10, vertex11));
-        edgeSet2.add(new Edge("y", ModelConstants.WRITE_STRING, vertex10, vertex12));
-        edgeSet2.add(new Edge(ModelConstants.DATABASE_WRITE, ModelConstants.DATABASE_NAME, vertex12, vertex13));
-
-        Set<Vertex> vertexSet2 = new HashSet<>(List.of(vertex10, vertex11, vertex12, vertex13));
-
-        Trace trace2 = new Trace(vertexSet2, edgeSet2);
-
-        return List.of(trace1, trace2);
+        return List.of(trace);
     }
 
     @Test

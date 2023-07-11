@@ -136,7 +136,14 @@ public class TraceService {
 
                 // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
                 if (connectedTrace.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
-                    connectedGraphs.add(connectedTrace);
+                    if(methods.contains(ModelConstants.WRITE_STRING)) {
+                        // If we are creating read traces there must be at least one write relation between services
+                        if (connectedTrace.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.WRITE_STRING))) {
+                            connectedGraphs.add(connectedTrace);
+                        }
+                    } else {
+                        connectedGraphs.add(connectedTrace);
+                    }
                 }
             }
         }
