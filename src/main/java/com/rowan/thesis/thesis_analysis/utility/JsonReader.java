@@ -2,7 +2,6 @@ package com.rowan.thesis.thesis_analysis.utility;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rowan.thesis.thesis_analysis.model.input.Input;
 import com.rowan.thesis.thesis_analysis.model.input.Span;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
