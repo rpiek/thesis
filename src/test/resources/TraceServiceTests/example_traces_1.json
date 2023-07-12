@@ -1,0 +1,99 @@
+[
+  [
+    {
+      "traceId": "deaeac66066efe4f",
+      "parentId": "deaeac66066efe4f",
+      "id": "cfac5441aca32b4d",
+      "name": "database-read",
+      "timestamp": 1684139555537154,
+      "duration": 2061,
+      "localEndpoint": {
+        "serviceName": "ts-travel-service",
+        "ipv4": "172.19.0.7"
+      },
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findByTripId"
+      }
+    },
+    {
+      "traceId": "deaeac66066efe4f",
+      "parentId": "deaeac66066efe4f",
+      "id": "218716907746edb3",
+      "kind": "CLIENT",
+      "name": "get",
+      "timestamp": 1684139555540050,
+      "duration": 10940,
+      "localEndpoint": {
+        "serviceName": "ts-travel-service",
+        "ipv4": "172.19.0.7"
+      },
+      "tags": {
+        "http.method": "GET",
+        "http.path": "/api/v1/routeservice/routes/084837bb-53c8-4438-87c8-0321a4d09917"
+      }
+    },
+    {
+      "traceId": "deaeac66066efe4f",
+      "id": "deaeac66066efe4f",
+      "kind": "SERVER",
+      "name": "get /api/v1/travelservice/routes/{tripid}",
+      "timestamp": 1684139555535039,
+      "duration": 19441,
+      "localEndpoint": {
+        "serviceName": "ts-travel-service",
+        "ipv4": "172.19.0.7"
+      },
+      "remoteEndpoint": {
+        "ipv4": "172.19.0.1",
+        "port": 42756
+      },
+      "tags": {
+        "http.method": "GET",
+        "http.path": "/api/v1/travelservice/routes/G1237",
+        "mvc.controller.class": "TravelController",
+        "mvc.controller.method": "getRouteByTripId"
+      }
+    },
+    {
+      "traceId": "deaeac66066efe4f",
+      "parentId": "218716907746edb3",
+      "id": "9c8123070fc810de",
+      "name": "database-read",
+      "timestamp": 1684139555544302,
+      "duration": 3081,
+      "localEndpoint": {
+        "serviceName": "ts-route-service",
+        "ipv4": "172.19.0.6"
+      },
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      }
+    },
+    {
+      "traceId": "deaeac66066efe4f",
+      "parentId": "deaeac66066efe4f",
+      "id": "218716907746edb3",
+      "kind": "SERVER",
+      "name": "get /api/v1/routeservice/routes/{routeid}",
+      "timestamp": 1684139555542078,
+      "duration": 9774,
+      "localEndpoint": {
+        "serviceName": "ts-route-service",
+        "ipv4": "172.19.0.6"
+      },
+      "remoteEndpoint": {
+        "ipv4": "172.19.0.7",
+        "port": 37198
+      },
+      "tags": {
+        "http.method": "GET",
+        "http.path": "/api/v1/routeservice/routes/084837bb-53c8-4438-87c8-0321a4d09917",
+        "mvc.controller.class": "RouteController",
+        "mvc.controller.method": "queryById"
+      },
+      "shared": true
+    }
+  ]
+]

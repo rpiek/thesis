@@ -1,0 +1,200 @@
+[
+  [
+    {
+      "parentId": "1",
+      "id": "0",
+      "kind": "CLIENT",
+      "name": "get",
+      "timestamp": 1684139538100441,
+      "duration": 35433,
+      "localEndpoint": {
+        "serviceName": "ts-travel-service",
+        "ipv4": "172.19.0.7"
+      },
+      "tags": {
+        "http.method": "GET",
+        "http.path": "/api/v1/routeservice/routes/084837bb-53c8-4438-87c8-0321a4d09917"
+      }
+    },
+    {
+      "id": "1",
+      "name": "x",
+      "localEndpoint": {
+        "serviceName": "service1"
+      },
+      "tags": {
+        "http.method": "GET"
+      }
+    },
+    {
+      "parentId": "1",
+      "id": "2",
+      "name": "database-read",
+      "timestamp": 1684139538122804,
+      "duration": 7534,
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service1"
+      }
+    },
+    {
+      "id": "3",
+      "parentId": "1",
+      "name": "y",
+      "localEndpoint": {
+        "serviceName": "service2"
+      },
+      "tags": {
+        "http.method": "GET"
+      }
+    },
+    {
+      "parentId": "3",
+      "id": "4",
+      "name": "database-read",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service2"
+      }
+    },
+    {
+      "parentId": "3",
+      "id": "5",
+      "name": "database-read",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service2"
+      }
+    },
+    {
+      "id": "6",
+      "parentId": "3",
+      "name": "z",
+      "localEndpoint": {
+        "serviceName": "service3"
+      },
+
+      "tags": {
+        "http.method": "PUT"
+      }
+    },
+    {
+      "parentId": "6",
+      "id": "7",
+      "name": "database-read",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service3"
+      }
+    },
+    {
+      "id": "8",
+      "parentId": "6",
+      "name": "y",
+      "localEndpoint": {
+        "serviceName": "service2"
+      },
+
+      "tags": {
+        "http.method": "PUT"
+      }
+    },
+    {
+      "parentId": "8",
+      "id": "9",
+      "name": "database-read",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service2"
+      }
+    },
+    {
+      "id": "10",
+      "parentId": "3",
+      "name": "y",
+      "localEndpoint": {
+        "serviceName": "service4"
+      },
+
+      "tags": {
+        "http.method": "GET"
+      }
+    },
+    {
+      "parentId": "10",
+      "id": "11",
+      "name": "database-read",
+
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service4"
+      }
+    },
+    {
+      "id": "12",
+      "parentId": "10",
+      "name": "y",
+      "localEndpoint": {
+        "serviceName": "service5"
+      },
+
+      "tags": {
+        "http.method": "POST"
+      }
+    },
+    {
+      "parentId": "12",
+      "id": "13",
+      "name": "database-write",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "findById"
+      },
+      "localEndpoint": {
+        "serviceName": "service5"
+      }
+    },
+    {
+      "id": "14",
+      "parentId": "8",
+      "name": "a",
+      "localEndpoint": {
+        "serviceName": "service6"
+      },
+
+      "tags": {
+        "http.method": "POST"
+      }
+    },
+    {
+      "parentId": "14",
+      "id": "15",
+      "name": "database-write",
+      "tags": {
+        "class": "$Proxy154",
+        "method": "save"
+      },
+      "localEndpoint": {
+        "serviceName": "service6"
+      }
+    }
+  ]
+]
