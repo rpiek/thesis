@@ -29,7 +29,7 @@ public class TraceService {
         Map<String, Set<String>> readEndpointMap = new HashMap<>();
         Map<String, Set<String>> writeEndpointMap = new HashMap<>();
         for (List<Span> spans : spanLists) {
-            final Trace trace = getTree(spans);
+            final Trace trace = getTrace(spans);
             List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
             List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
             // Add the traces into their respective lists
@@ -43,7 +43,7 @@ public class TraceService {
         return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
     }
 
-    private Trace getTree(List<Span> spans) {
+    private Trace getTrace(List<Span> spans) {
         Set<Vertex> vertices = new HashSet<>();
         Set<Edge> edges = new HashSet<>();
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).findFirst().orElse(null);
@@ -59,12 +59,10 @@ public class TraceService {
         spans.remove(beginSpan);
         spans.remove(clientSpan);
 
-        createTrace(root, beginSpan, spans, vertices, edges);
-
-        return new Trace(vertices, edges);
+        return createTrace(root, beginSpan, spans, vertices, edges);
     }
 
-    private void createTrace(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
+    private Trace createTrace(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
         List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(parentSpan.getSpanId())).toList();
 
         for (Span childSpan : spanList) {
@@ -102,8 +100,11 @@ public class TraceService {
                     }
                 }
             }
+            // Vertices and edges are being added by calling this method recursively
             createTrace(child, childSpan, spans, vertices, edges);
         }
+
+        return new Trace(vertices, edges);
     }
 
     private List<Trace> getSubTraces(Trace trace, Set<String> methods) {
@@ -124,7 +125,7 @@ public class TraceService {
             // Check if we did not visit the vertex, to overcome overlapping traces
             if (!visitedVertices.contains(vertex)) {
 
-                Trace connectedTrace = performDFS(vertex, filteredTrace, visitedVertices, new HashSet<>(), new HashSet<>());
+                Trace connectedTrace = dfs(vertex, filteredTrace, visitedVertices, new HashSet<>(), new HashSet<>());
 
                 // If we want to create a set of read traces we must filter out the vertices where a post request is made, but where only reads or no
                 // database calls are made
@@ -151,7 +152,7 @@ public class TraceService {
         return connectedGraphs;
     }
 
-    private Trace performDFS(Vertex vertex, Trace trace, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
+    private Trace dfs(Vertex vertex, Trace trace, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
         visited.add(vertex);
         connectedVertices.add(vertex);
         Trace connectedTrace = new Trace(new HashSet<>(), new HashSet<>());
@@ -164,7 +165,8 @@ public class TraceService {
                 Vertex adjacentVertex = (edge.getSource().equals(vertex)) ? edge.getTarget() : edge.getSource();
                 // If we haven't visited this adjacent vertex, perform DFS on this as well
                 if (!visited.contains(adjacentVertex)) {
-                    performDFS(adjacentVertex, trace, visited, connectedVertices, connectedEdges);
+                   // Mutate connectedVertices and connectedEdges recursively
+                   dfs(adjacentVertex, trace, visited, connectedVertices, connectedEdges);
                 }
             }
         }
