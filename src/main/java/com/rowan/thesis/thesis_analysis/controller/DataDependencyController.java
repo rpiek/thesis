@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ public class DataDependencyController {
 
     @PostMapping("/analyze")
     public @ResponseBody ResponseEntity<Result> calculateDataDependency(@RequestBody List<List<Span>> traces) {
-        log.info("traces amount: " + traces.size());
+        log.info("Traces amount: " + traces.size());
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
         result.setDataDependsNeedMetrics(dataDependencyService.calculateDataDependsNeedMetrics(model));
@@ -42,7 +43,7 @@ public class DataDependencyController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping("/analyze/data-depends-read")
+    @PostMapping("/read")
     public @ResponseBody ResponseEntity<Result> calculateDataDependsRead(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
@@ -50,7 +51,7 @@ public class DataDependencyController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping("/analyze/data-depends-write")
+    @PostMapping("/write")
     public @ResponseBody ResponseEntity<Result> calculateDataDependsWrite(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);
@@ -58,7 +59,7 @@ public class DataDependencyController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping("/analyze/data-depends-need")
+    @PostMapping("/need")
     public @ResponseBody ResponseEntity<Result> calculateDataDependsNeed(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
         Result result = new Result(new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
@@ -67,11 +68,11 @@ public class DataDependencyController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping("/analyze/data-depends-file")
-    public @ResponseBody ResponseEntity<Result> calculateDataDependsOfFile(@RequestBody String fileName) throws IOException {
+    @GetMapping("/analyze/file")
+    public @ResponseBody ResponseEntity<Result> calculateDataDependsOfFile() throws IOException {
         List<List<Span>> traces = jsonReader.readJsonFile();
 
-        log.info("trace size:" + traces.size());
+        log.info("Traces amount:" + traces.size());
 
         Model model = traceService.tracesToModel(traces);
         Result result = dataDependencyService.getDataDependsScore(model);

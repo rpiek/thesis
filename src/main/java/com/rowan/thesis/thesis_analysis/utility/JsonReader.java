@@ -29,7 +29,7 @@ public class JsonReader {
         byte[] bytes = Files.readAllBytes(Paths.get(resource.getURI()));
         String jsonContent = new String(bytes);
 
-        TypeReference<List<List<Span>>> typeReference = new TypeReference<List<List<Span>>>() {};
+    TypeReference<List<List<Span>>> typeReference = new TypeReference<>() {};
         return objectMapper.readValue(jsonContent, typeReference);
     }
 }
