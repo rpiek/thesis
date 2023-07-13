@@ -123,17 +123,17 @@ public class DataDependencyService {
         return trace.getEdges().stream().filter(edge -> edge.getSource().equals(vertex) && edge.getMethod().equals(ModelConstants.DATABASE_NAME)).toList().size();
     }
 
-    public static Set<Vertex> findLongestPath(Vertex startVertex, Trace trace) {
+    private Set<Vertex> findLongestPath(Vertex startVertex, Trace trace) {
         Set<Vertex> visited = new HashSet<>();
         LinkedList<Vertex> path = new LinkedList<>();
         Set<Vertex> longestPath = new HashSet<>();
 
-        dfs(startVertex, trace, visited, path, longestPath);
+        longestPath = dfs(startVertex, trace, visited, path, longestPath);
 
         return longestPath.stream().filter(vertex -> !vertex.getName().equals(startVertex.getName())).collect(Collectors.toSet());
     }
 
-    private static void dfs(Vertex currentVertex, Trace trace, Set<Vertex> visited, LinkedList<Vertex> path, Set<Vertex> longestPath) {
+    private Set<Vertex> dfs(Vertex currentVertex, Trace trace, Set<Vertex> visited, LinkedList<Vertex> path, Set<Vertex> longestPath) {
         visited.add(currentVertex);
         path.addLast(currentVertex);
 
@@ -144,12 +144,13 @@ public class DataDependencyService {
 
         for (Edge edge : trace.getEdges()) {
             if (edge.getTarget().equals(currentVertex) && !visited.contains(edge.getSource())) {
-                dfs(edge.getSource(), trace, visited, path, longestPath);
+                longestPath = dfs(edge.getSource(), trace, visited, path, longestPath);
             }
         }
 
         path.removeLast();
         visited.remove(currentVertex);
+        return longestPath;
     }
 
     public List<DataDependsNeedMetric> calculateDataDependsNeedMetrics(Model model) {
