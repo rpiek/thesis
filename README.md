@@ -1,7 +1,5 @@
 # Data dependency POC
 
-# My Spring Application
-
 This is a README file for the data dependency POC, build as part of a master thesis project.
 
 ## API Endpoints
