@@ -30,14 +30,25 @@ public class TraceService {
         Map<String, Set<String>> writeEndpointMap = new HashMap<>();
         for (List<Span> spans : spanLists) {
             final Trace trace = getTrace(spans);
-            List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
-            List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
-            // Add the traces into their respective lists
-            readTraces.addAll(getSubTraces(trace, readMethods));
-            writeTraces.addAll(getSubTraces(trace, writeMethods));
-            // Add the interfaces of the edges into their respective endpoint maps
-            readSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
-            writeSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
+            if (trace.getVertices().stream().filter(vertex -> !vertex.getName().equals(ModelConstants.DATABASE_NAME)).collect(Collectors.toSet()).size() > 1) {
+                List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
+                List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
+                // Add the traces into their respective lists
+                readTraces.addAll(readSubGraphs);
+                writeTraces.addAll(writeSubGraphs);
+                // Add the interfaces of the edges into their respective endpoint maps
+                readSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
+                writeSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
+            } else {
+                // If there is only one vertex representing a service, check the database heuristics
+                if (!trace.getEdges().isEmpty()) {
+                    if (trace.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.DATABASE_WRITE))) {
+                        writeTraces.add(trace);
+                    } else {
+                        readTraces.add(trace);
+                    }
+                }
+            }
         }
 
         return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
@@ -117,7 +128,6 @@ public class TraceService {
         }
 
         Trace filteredTrace = new Trace(trace.getVertices(), filteredEdges);
-
         List<Trace> connectedGraphs = new ArrayList<>();
         Set<Vertex> visitedVertices = new HashSet<>();
 
@@ -137,12 +147,9 @@ public class TraceService {
 
                 // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
                 if (connectedTrace.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
-                    if(methods.contains(ModelConstants.WRITE_STRING)) {
-                        // If we are creating read traces there must be at least one write relation between services
-                        if (connectedTrace.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.WRITE_STRING))) {
-                            connectedGraphs.add(connectedTrace);
-                        }
-                    } else {
+                    // Remove all database calls from the root node
+                    connectedTrace.removeRootNodeDatabaseCalls();
+                    if (connectedTrace.getEdges().stream().anyMatch(edge -> edge.getTarget().getName().equals(ModelConstants.DATABASE_NAME))) {
                         connectedGraphs.add(connectedTrace);
                     }
                 }
