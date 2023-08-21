@@ -30,17 +30,17 @@ public class TraceService {
         Map<String, Set<String>> writeEndpointMap = new HashMap<>();
         for (List<Span> spans : spanLists) {
             final Trace trace = getTrace(spans);
-            List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
-            List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
+            List<Trace> readSubTraces = getSubTraces(trace, readMethods);
+            List<Trace> writeSubTraces = getSubTraces(trace, writeMethods);
             // Add the traces into their respective lists
-            readTraces.addAll(getSubTraces(trace, readMethods));
-            writeTraces.addAll(getSubTraces(trace, writeMethods));
+            readTraces.addAll(readSubTraces);
+            writeTraces.addAll(writeSubTraces);
             // Add the interfaces of the edges into their respective endpoint maps
-            readSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
-            writeSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
+            readSubTraces.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
+            writeSubTraces.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
         }
 
-        return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
+        return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap, spanLists.size());
     }
 
     private Trace getTrace(List<Span> spans) {
@@ -127,8 +127,7 @@ public class TraceService {
 
                 Trace connectedTrace = dfs(vertex, filteredTrace, visitedVertices, new HashSet<>(), new HashSet<>());
 
-                // If we want to create a set of read traces we must filter out the vertices where a post request is made, but where only reads or no
-                // database calls are made
+                // If we want to create a set of write traces we must filter out database relationships as result of a read/send relation
                 if (methods.contains(ModelConstants.WRITE_STRING)) {
                     Set<Vertex> readSendVertices = connectedTrace.getEdges().stream().filter(edge -> edge.getMethod().equals(ModelConstants.SEND_READ_STRING)).map(Edge::getTarget).collect(Collectors.toSet());
                     readSendVertices.forEach(vertex1 -> connectedTrace.getEdges().removeIf(edge -> edge.getSource() == vertex1 && edge.getMethod().equals(ModelConstants.DATABASE_NAME)) );

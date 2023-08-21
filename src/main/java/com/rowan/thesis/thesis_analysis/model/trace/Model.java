@@ -18,4 +18,6 @@ public class Model {
 
     private Map<String, Set<String>> writeEndpointMap;
 
+    private int clientRequests;
+
 }

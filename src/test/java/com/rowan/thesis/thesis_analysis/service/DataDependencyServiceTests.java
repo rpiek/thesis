@@ -45,7 +45,7 @@ public class DataDependencyServiceTests {
         map.put("service3", 2.0);
         Result expected = new Result(map, new HashMap<>(), dataDependsMetrics, new ArrayList<>());
 
-        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace())), new ArrayList<>(), ExampleTraces.Get_example_simple_trace_endpoint_map(), new HashMap<>()));
+        Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace())), new ArrayList<>(), ExampleTraces.Get_example_simple_trace_endpoint_map(), new HashMap<>(), 1));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -70,7 +70,7 @@ public class DataDependencyServiceTests {
         map.put("service3", 2.0);
         Result expected = new Result(new HashMap<>(), map, dataDependsMetrics, new ArrayList<>());
 
-        Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace())), new HashMap<>(), ExampleTraces.Get_example_simple_trace_endpoint_map()));
+        Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace())), new HashMap<>(), ExampleTraces.Get_example_simple_trace_endpoint_map(), 1));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -82,14 +82,14 @@ public class DataDependencyServiceTests {
     public void Test_get_data_depends() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
         Map<String, Double> service2Map = new HashMap<>();
-        service2Map.put("service1", 2.0);
+        service2Map.put("service1", 1.0);
         Map<String, Double> service3Map = new HashMap<>();
-        service3Map.put("service2", 2.0);
+        service3Map.put("service2", 1.0);
         Map<String, Double> service4Map = new HashMap<>();
-        service4Map.put("service3", 1.0);
-        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", service4Map, 1);
-        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", service2Map, 2);
-        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", service3Map, 2);
+        service4Map.put("service3", 0.5);
+        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "z", service4Map, 0.5);
+        DataDependsMetric dataDependsWriteDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service2", "x", service2Map, 1.0);
+        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "y", service3Map, 1.0);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
         dataDependsMetrics.add(dataDependsWriteDataDependsMetric2);
         dataDependsMetrics.add(dataDependsWriteDataDependsMetric3);
@@ -98,15 +98,15 @@ public class DataDependencyServiceTests {
         dataDependsReadMap.put("service1", 0.0);
         dataDependsReadMap.put("service2", 0.0);
         dataDependsReadMap.put("service3", 0.0);
-        dataDependsReadMap.put("service4", 1.0);
+        dataDependsReadMap.put("service4", 0.5);
         dataDependsWriteMap.put("service1", 0.0);
-        dataDependsWriteMap.put("service2", 2.0);
-        dataDependsWriteMap.put("service3", 2.0);
+        dataDependsWriteMap.put("service2", 1.0);
+        dataDependsWriteMap.put("service3", 1.0);
         dataDependsWriteMap.put("service4", 0.0);
 
         Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
-        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_read_trace())), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_write_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map()));
+        Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_read_trace())), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_write_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map(), 2));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -118,18 +118,18 @@ public class DataDependencyServiceTests {
     public void Test_get_data_depends_parallel() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
         Map<String, Double> service2Map = new HashMap<>();
-        service2Map.put("service1", 1.0);
-        service2Map.put("service3", 0.5);
+        service2Map.put("service1", 0.5);
+        service2Map.put("service3", 0.25);
         Map<String, Double> service3Map = new HashMap<>();
-        service3Map.put("service2", 0.5);
+        service3Map.put("service2", 0.25);
         Map<String, Double> service4Map = new HashMap<>();
-        service4Map.put("service2", 1.0);
+        service4Map.put("service2", 0.5);
         Map<String, Double> service5Map = new HashMap<>();
-        service5Map.put("service4", 0.5);
-        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 1.118033988749895);
-        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 1.0);
-        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "z", service3Map, 0.5);
-        DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map,0.5);
+        service5Map.put("service4", 0.25);
+        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 0.5590169943749475);
+        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 0.5);
+        DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "z", service3Map, 0.25);
+        DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map,0.25);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric2);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
         dataDependsMetrics.add(dataDependsWriteDataDependsMetric3);
@@ -137,19 +137,19 @@ public class DataDependencyServiceTests {
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         dataDependsReadMap.put("service1", 0.0);
-        dataDependsReadMap.put("service2", 1.118033988749895);
+        dataDependsReadMap.put("service2", 0.5590169943749475);
         dataDependsReadMap.put("service3", 0.0);
-        dataDependsReadMap.put("service4", 1.0);
+        dataDependsReadMap.put("service4", 0.5);
         dataDependsReadMap.put("service5", 0.0);
         dataDependsWriteMap.put("service1", 0.0);
         dataDependsWriteMap.put("service2", 0.0);
-        dataDependsWriteMap.put("service3", 0.5);
+        dataDependsWriteMap.put("service3", 0.25);
         dataDependsWriteMap.put("service4", 0.0);
-        dataDependsWriteMap.put("service5", 0.5);
+        dataDependsWriteMap.put("service5", 0.25);
 
         Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
-        Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace(), ExampleTraces.Get_example_parallel_write_trace(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map()));
+        Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace(), ExampleTraces.Get_example_parallel_write_trace(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map(), 4));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -161,18 +161,18 @@ public class DataDependencyServiceTests {
     public void Test_get_data_depends_parallel_with_dup() {
         ArrayList<DataDependsMetric> dataDependsMetrics = new ArrayList<>();
         Map<String, Double> service2Map = new HashMap<>();
-        service2Map.put("service1", 2.0);
-        service2Map.put("service3", 2.0);
+        service2Map.put("service1", 1.0);
+        service2Map.put("service3", 1.0);
         Map<String, Double> service3Map = new HashMap<>();
-        service3Map.put("service2", 2.0);
+        service3Map.put("service2", 1.0);
         Map<String, Double> service4Map = new HashMap<>();
-        service4Map.put("service2", 2.0);
+        service4Map.put("service2", 1.0);
         Map<String, Double> service5Map = new HashMap<>();
-        service5Map.put("service4", 1.0);
-        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 2.8284271247461903);
-        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 2);
-        DataDependsMetric dataDependsReadDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "z", service3Map, 2);
-        DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map, 1);
+        service5Map.put("service4", 0.5);
+        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 1.4142135623730951);
+        DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 1);
+        DataDependsMetric dataDependsReadDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "z", service3Map, 1);
+        DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map, 0.5);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric2);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric4);
         dataDependsMetrics.add(dataDependsReadDataDependsMetric3);
@@ -180,19 +180,19 @@ public class DataDependencyServiceTests {
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         dataDependsReadMap.put("service1", 0.0);
-        dataDependsReadMap.put("service2", 2.8284271247461903);
-        dataDependsReadMap.put("service3", 2.0);
-        dataDependsReadMap.put("service4", 2.0);
+        dataDependsReadMap.put("service2", 1.4142135623730951);
+        dataDependsReadMap.put("service3", 1.0);
+        dataDependsReadMap.put("service4", 1.0);
         dataDependsReadMap.put("service5", 0.0);
         dataDependsWriteMap.put("service1", 0.0);
         dataDependsWriteMap.put("service2", 0.0);
         dataDependsWriteMap.put("service3", 0.0);
         dataDependsWriteMap.put("service4", 0.0);
-        dataDependsWriteMap.put("service5", 1.0);
+        dataDependsWriteMap.put("service5", 0.5);
 
         Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
-        Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace_with_dup(), ExampleTraces.Get_example_parallel_write_trace_with_dup(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_with_dup(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_with_dup()));
+        Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace_with_dup(), ExampleTraces.Get_example_parallel_write_trace_with_dup(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_with_dup(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_with_dup(), 2));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()
@@ -223,7 +223,7 @@ public class DataDependencyServiceTests {
 
         List<DataDependsNeedMetric> expected = List.of(dataDependsNeedMetricRead1, dataDependsNeedMetricRead2, dataDependsNeedMetricWrite1, dataDependsNeedMetricWrite2, dataDependsNeedMetricRead3 ,dataDependsNeedMetricWrite3);
 
-        List<DataDependsNeedMetric> actual = dataDependencyService.calculateDataDependsNeedMetrics(new Model(ExampleTraces.Get_example_read_traces_short(), ExampleTraces.Get_example_write_traces_short(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_short(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_short()));
+        List<DataDependsNeedMetric> actual = dataDependencyService.calculateDataDependsNeedMetrics(new Model(ExampleTraces.Get_example_read_traces_short(), ExampleTraces.Get_example_write_traces_short(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_short(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_short(), 6));
 
         Assertions.assertThat(actual)
                 .usingRecursiveComparison()

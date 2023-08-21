@@ -32,8 +32,8 @@ public class DataDependencyService {
         Set<String> services = getServices(model);
 
         for (String service : services) {
-            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
-            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ, model.getClientRequests()));
+            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE, model.getClientRequests()));
         }
 
         return new Result(dataDependsReadMap, dataDependsWriteMap, new ArrayList<>(results), new ArrayList<>());
@@ -44,7 +44,7 @@ public class DataDependencyService {
         Set<String> services = getServices(model);
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         for (String service : services) {
-            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ));
+            dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ, model.getClientRequests()));
         }
         return new Result(dataDependsReadMap, new HashMap<>(), results, new ArrayList<>());
     }
@@ -54,30 +54,30 @@ public class DataDependencyService {
         Set<String> services = getServices(model);
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         for (String service : services) {
-            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE));
+            dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE, model.getClientRequests()));
         }
         return new Result(new HashMap<>(), dataDependsWriteMap, results, new ArrayList<>());
     }
 
-    private double dataDepends(String serviceName, Set<String> services, List<Trace> traces, Map<String, Set<String>> map, DataDependsType dataDependsType) {
+    private double dataDepends(String serviceName, Set<String> services, List<Trace> traces, Map<String, Set<String>> map, DataDependsType dataDependsType, int clientRequests) {
         double result = 0;
         if (map.containsKey(serviceName)) {
             for (String path : map.get(serviceName)) {
-                result += dataDependsOnEndpoint(serviceName, services, path, traces, dataDependsType);
+                result += dataDependsOnEndpoint(serviceName, services, path, traces, dataDependsType, clientRequests);
             }
         }
 
         return result;
     }
 
-    private double dataDependsOnEndpoint(String serviceName, Set<String> services, String endpoint, List<Trace> traces, DataDependsType dataDependsType) {
+    private double dataDependsOnEndpoint(String serviceName, Set<String> services, String endpoint, List<Trace> traces, DataDependsType dataDependsType, int clientRequests) {
         Map<String, Double> valuesPerService = new HashMap<>();
 
         for (String serviceCallee : services) {
             if (!serviceCallee.equals(serviceName)) {
                 double value = reachableDependencies(serviceName, endpoint, traces, serviceCallee);
                 if (value != 0) {
-                    value = value / traces.size();
+                    value = value / clientRequests;
                     valuesPerService.put(serviceCallee, value);
                 }
             }

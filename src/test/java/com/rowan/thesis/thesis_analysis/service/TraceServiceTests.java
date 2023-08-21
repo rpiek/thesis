@@ -32,7 +32,7 @@ public class TraceServiceTests {
         List<List<Span>> input = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
         HashMap<String, Set<String>> readEndpointMap = new HashMap<>();
         readEndpointMap.put("ts-route-service", new HashSet<>(Collections.singleton("get /api/v1/routeservice/routes/{routeid}")));
-        Model expected = new Model(new ArrayList<>(Collections.singleton(getReadTraces())), new ArrayList<>(), readEndpointMap, new HashMap<>());
+        Model expected = new Model(new ArrayList<>(Collections.singleton(getReadTraces())), new ArrayList<>(), readEndpointMap, new HashMap<>(), 1);
 
         Model actual = traceService.tracesToModel(input);
 
@@ -69,7 +69,7 @@ public class TraceServiceTests {
         readEndpointMap.put("service4", new HashSet<>(Collections.singleton("y")));
         writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
         writeEndpointMap.put("service3", new HashSet<>(Collections.singleton("z")));
-        Model expected = new Model(getReadTraces2(), getWriteTraces2(), readEndpointMap, writeEndpointMap);
+        Model expected = new Model(getReadTraces2(), getWriteTraces2(), readEndpointMap, writeEndpointMap, 1);
 
         Model actual = traceService.tracesToModel(input);
 
@@ -161,7 +161,7 @@ public class TraceServiceTests {
         readEndpointMap.put("service4", new HashSet<>(Collections.singleton("y")));
         readEndpointMap.put("service3", new HashSet<>(Collections.singleton("p")));
         writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
-        Model expected = new Model(getReadTracesDup(), getWriteTracesDup(), readEndpointMap, writeEndpointMap);
+        Model expected = new Model(getReadTracesDup(), getWriteTracesDup(), readEndpointMap, writeEndpointMap, 1);
 
         Model actual = traceService.tracesToModel(input);
 
@@ -228,7 +228,7 @@ public class TraceServiceTests {
         readEndpointMap.put("service4", new HashSet<>(Collections.singleton("y")));
         readEndpointMap.put("service3", new HashSet<>(Collections.singleton("z")));
         writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
-        Model expected = new Model(getReadTracesReadSend(), getWriteTracesReadSend(), readEndpointMap, writeEndpointMap);
+        Model expected = new Model(getReadTracesReadSend(), getWriteTracesReadSend(), readEndpointMap, writeEndpointMap, 1);
 
         Model actual = traceService.tracesToModel(input);
 
@@ -300,7 +300,7 @@ public class TraceServiceTests {
         writeEndpointMap.put("service2", new HashSet<>(Collections.singleton("y")));
         writeEndpointMap.put("service5", new HashSet<>(Collections.singleton("y")));
         writeEndpointMap.put("service6", new HashSet<>(Collections.singleton("a")));
-        Model expected = new Model(getReadTracesReadSend2(), getWriteTracesReadSend2(), readEndpointMap, writeEndpointMap);
+        Model expected = new Model(getReadTracesReadSend2(), getWriteTracesReadSend2(), readEndpointMap, writeEndpointMap, 1);
 
         Model actual = traceService.tracesToModel(input);
 
