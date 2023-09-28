@@ -43,7 +43,7 @@ public class DataDependencyServiceTests {
         map.put("service1", 0.0);
         map.put("service2", 1.0);
         map.put("service3", 2.0);
-        Result expected = new Result(map, new HashMap<>(), dataDependsMetrics, new ArrayList<>());
+        Result expected = new Result(3.0, 0.0, map, new HashMap<>(), dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsReadScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_get_trace())), new ArrayList<>(), ExampleTraces.Get_example_simple_trace_endpoint_map(), new HashMap<>(), 1));
 
@@ -68,7 +68,7 @@ public class DataDependencyServiceTests {
         map.put("service1", 0.0);
         map.put("service2", 1.0);
         map.put("service3", 2.0);
-        Result expected = new Result(new HashMap<>(), map, dataDependsMetrics, new ArrayList<>());
+        Result expected = new Result(0.0, 3.0, new HashMap<>(), map, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsWriteScore(new Model(new ArrayList<>(), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_simple_post_trace())), new HashMap<>(), ExampleTraces.Get_example_simple_trace_endpoint_map(), 1));
 
@@ -104,7 +104,7 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service3", 1.0);
         dataDependsWriteMap.put("service4", 0.0);
 
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
+        Result expected = new Result(0.5, 2.0, dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_read_trace())), new ArrayList<>(Collections.singleton(ExampleTraces.Get_example_complex_write_trace())), ExampleTraces.Get_example_complex_trace_read_endpoint_map(), ExampleTraces.Get_example_complex_trace_write_endpoint_map(), 2));
 
@@ -126,7 +126,7 @@ public class DataDependencyServiceTests {
         service4Map.put("service2", 0.5);
         Map<String, Double> service5Map = new HashMap<>();
         service5Map.put("service4", 0.25);
-        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 0.5590169943749475);
+        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 0.75);
         DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 0.5);
         DataDependsMetric dataDependsWriteDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service3", "z", service3Map, 0.25);
         DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map,0.25);
@@ -137,7 +137,7 @@ public class DataDependencyServiceTests {
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         dataDependsReadMap.put("service1", 0.0);
-        dataDependsReadMap.put("service2", 0.5590169943749475);
+        dataDependsReadMap.put("service2", 0.75);
         dataDependsReadMap.put("service3", 0.0);
         dataDependsReadMap.put("service4", 0.5);
         dataDependsReadMap.put("service5", 0.0);
@@ -147,7 +147,7 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service4", 0.0);
         dataDependsWriteMap.put("service5", 0.25);
 
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
+        Result expected = new Result(1.25, 0.5, dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace(), ExampleTraces.Get_example_parallel_write_trace(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map(), 4));
 
@@ -169,7 +169,7 @@ public class DataDependencyServiceTests {
         service4Map.put("service2", 1.0);
         Map<String, Double> service5Map = new HashMap<>();
         service5Map.put("service4", 0.5);
-        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 1.4142135623730951);
+        DataDependsMetric dataDependsReadDataDependsMetric2 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service2", "y", service2Map, 2.0);
         DataDependsMetric dataDependsReadDataDependsMetric4 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service4", "y", service4Map, 1);
         DataDependsMetric dataDependsReadDataDependsMetric3 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_READ, "service3", "z", service3Map, 1);
         DataDependsMetric dataDependsWriteDataDependsMetric5 = new DataDependsMetric(DataDependsType.DATA_DEPENDS_WRITE, "service5", "y", service5Map, 0.5);
@@ -180,7 +180,7 @@ public class DataDependencyServiceTests {
         Map<String, Double> dataDependsReadMap = new HashMap<>();
         Map<String, Double> dataDependsWriteMap = new HashMap<>();
         dataDependsReadMap.put("service1", 0.0);
-        dataDependsReadMap.put("service2", 1.4142135623730951);
+        dataDependsReadMap.put("service2", 2.0);
         dataDependsReadMap.put("service3", 1.0);
         dataDependsReadMap.put("service4", 1.0);
         dataDependsReadMap.put("service5", 0.0);
@@ -190,7 +190,7 @@ public class DataDependencyServiceTests {
         dataDependsWriteMap.put("service4", 0.0);
         dataDependsWriteMap.put("service5", 0.5);
 
-        Result expected = new Result(dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
+        Result expected = new Result(4.0, 0.5, dataDependsReadMap, dataDependsWriteMap, dataDependsMetrics, new ArrayList<>());
 
         Result actual = dataDependencyService.getDataDependsScore(new Model(ExampleTraces.Get_example_parallel_read_trace_with_dup(), ExampleTraces.Get_example_parallel_write_trace_with_dup(), ExampleTraces.Get_example_parallel_read_trace_endpoint_map_with_dup(), ExampleTraces.Get_example_parallel_write_trace_endpoint_map_with_dup(), 2));
 

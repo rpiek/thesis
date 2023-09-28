@@ -9,6 +9,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class Result {
 
+    double dataDependsSystemRead;
+    double dataDependsSystemWrite;
     Map<String, Double> dataDependsRead;
     Map<String, Double> dataDependsWrite;
     List<DataDependsMetric> dataDependsSubMetrics;

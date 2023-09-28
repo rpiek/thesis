@@ -36,7 +36,10 @@ public class DataDependencyService {
             dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE, model.getClientRequests()));
         }
 
-        return new Result(dataDependsReadMap, dataDependsWriteMap, new ArrayList<>(results), new ArrayList<>());
+        double dataDependsSystemRead = dataDependsReadMap.values().stream().mapToDouble(Double::doubleValue).sum();
+        double dataDependsSystemWrite = dataDependsWriteMap.values().stream().mapToDouble(Double::doubleValue).sum();
+
+        return new Result(dataDependsSystemRead, dataDependsSystemWrite, dataDependsReadMap, dataDependsWriteMap, new ArrayList<>(results), new ArrayList<>());
     }
 
     public Result getDataDependsReadScore(Model model) {
@@ -46,7 +49,10 @@ public class DataDependencyService {
         for (String service : services) {
             dataDependsReadMap.put(service, dataDepends(service, services, model.getReadTraces(), model.getReadEndpointMap(), DataDependsType.DATA_DEPENDS_READ, model.getClientRequests()));
         }
-        return new Result(dataDependsReadMap, new HashMap<>(), results, new ArrayList<>());
+
+        double dataDependsSystemRead = dataDependsReadMap.values().stream().mapToDouble(Double::doubleValue).sum();
+
+        return new Result(dataDependsSystemRead, 0.0, dataDependsReadMap, new HashMap<>(), results, new ArrayList<>());
     }
 
     public Result getDataDependsWriteScore(Model model) {
@@ -56,7 +62,11 @@ public class DataDependencyService {
         for (String service : services) {
             dataDependsWriteMap.put(service, dataDepends(service, services, model.getWriteTraces(), model.getWriteEndpointMap(), DataDependsType.DATA_DEPENDS_WRITE, model.getClientRequests()));
         }
-        return new Result(new HashMap<>(), dataDependsWriteMap, results, new ArrayList<>());
+
+        double dataDependsSystemWrite = dataDependsWriteMap.values().stream().mapToDouble(Double::doubleValue).sum();
+
+
+        return new Result(0.0, dataDependsSystemWrite, new HashMap<>(), dataDependsWriteMap, results, new ArrayList<>());
     }
 
     private double dataDepends(String serviceName, Set<String> services, List<Trace> traces, Map<String, Set<String>> map, DataDependsType dataDependsType, int clientRequests) {
@@ -73,17 +83,18 @@ public class DataDependencyService {
     private double dataDependsOnEndpoint(String serviceName, Set<String> services, String endpoint, List<Trace> traces, DataDependsType dataDependsType, int clientRequests) {
         Map<String, Double> valuesPerService = new HashMap<>();
 
+        double result = 0;
         for (String serviceCallee : services) {
             if (!serviceCallee.equals(serviceName)) {
                 double value = reachableDependencies(serviceName, endpoint, traces, serviceCallee);
                 if (value != 0) {
                     value = value / clientRequests;
                     valuesPerService.put(serviceCallee, value);
+                    result += value;
                 }
             }
         }
 
-        double result = euclidianNorm(valuesPerService.values().stream().toList());
         results.add(new DataDependsMetric(dataDependsType, serviceName, endpoint, valuesPerService, result));
 
         return result;
@@ -93,8 +104,8 @@ public class DataDependencyService {
         for (Trace trace : traces) {
             Set<Vertex> vertices = findApplicableVertices(trace, serviceCallee, endpoint, serviceName);
             for (Vertex vertex : vertices) {
-                int intraDataDependency = intraDataDependency(vertex, trace);
-                Set<Vertex> vertexSet = findLongestPath(vertex, trace);
+                int intraDataDependency = data(vertex, trace);
+                Set<Vertex> vertexSet = path(vertex, trace);
                 value += intraDataDependency * vertexSet.size();
             }
         }
@@ -109,21 +120,13 @@ public class DataDependencyService {
         return edges.stream().map(Edge::getTarget).collect(Collectors.toSet());
     }
 
-    private double euclidianNorm(List<Double> values) {
-        double sum = 0.0;
-
-        for (double value : values) {
-            sum += value * value;
-        }
-
-        return Math.sqrt(sum);
-    }
-
-    private int intraDataDependency(Vertex vertex, Trace trace) {
+    // Equivalent to data function from model
+    private int data(Vertex vertex, Trace trace) {
         return trace.getEdges().stream().filter(edge -> edge.getSource().equals(vertex) && edge.getMethod().equals(ModelConstants.DATABASE_NAME)).toList().size();
     }
 
-    private Set<Vertex> findLongestPath(Vertex startVertex, Trace trace) {
+    // Equivalent to path function from model
+    private Set<Vertex> path(Vertex startVertex, Trace trace) {
         Set<Vertex> visited = new HashSet<>();
         LinkedList<Vertex> path = new LinkedList<>();
         Set<Vertex> longestPath = new HashSet<>();
@@ -148,8 +151,8 @@ public class DataDependencyService {
             }
         }
 
-        path.removeLast();
-        visited.remove(currentVertex);
+//        path.removeLast();
+//        visited.remove(currentVertex);
         return longestPath;
     }
 
@@ -176,7 +179,7 @@ public class DataDependencyService {
                     for (Trace trace : traces) {
                         Set<Vertex> vertexSet = findApplicableVertices(trace, serviceName, endpoint, service);
                         for (Vertex vertex : vertexSet) {
-                            result += intraDataDependency(vertex, trace);
+                            result += data(vertex, trace);
                         }
                     }
                     if (result != 0) {
