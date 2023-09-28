@@ -29,27 +29,26 @@ public class TraceService {
         Map<String, Set<String>> readEndpointMap = new HashMap<>();
         Map<String, Set<String>> writeEndpointMap = new HashMap<>();
         for (List<Span> spans : spanLists) {
-            final Trace trace = getTrace(spans);
-            List<Trace> readSubGraphs = getSubTraces(trace, readMethods);
-            List<Trace> writeSubGraphs = getSubTraces(trace, writeMethods);
+            final Trace trace = createTrace(spans);
+            List<Trace> readSubTraces = cutTraces(trace, readMethods);
+            List<Trace> writeSubTraces = cutTraces(trace, writeMethods);
             // Add the traces into their respective lists
-            readTraces.addAll(getSubTraces(trace, readMethods));
-            writeTraces.addAll(getSubTraces(trace, writeMethods));
+            readTraces.addAll(readSubTraces);
+            writeTraces.addAll(writeSubTraces);
             // Add the interfaces of the edges into their respective endpoint maps
-            readSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
-            writeSubGraphs.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
+            readSubTraces.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, readEndpointMap)));
+            writeSubTraces.forEach(trace1 -> trace1.getEdges().forEach(edge -> fillMap(edge, writeEndpointMap)));
         }
 
-        return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap);
+        return new Model(readTraces, writeTraces, readEndpointMap, writeEndpointMap, spanLists.size());
     }
 
-    private Trace getTrace(List<Span> spans) {
+    private Trace createTrace(List<Span> spans) {
         Set<Vertex> vertices = new HashSet<>();
         Set<Edge> edges = new HashSet<>();
         Span beginSpan = spans.stream().filter(span -> span.getParentId() == null).findFirst().orElse(null);
-        Span clientSpan = spans.stream().filter(span -> span.getKind() != null && span.getKind().equals("CLIENT")).findFirst().orElse(null);
 
-        if (beginSpan == null || clientSpan == null) {
+        if (beginSpan == null) {
             // Handle case where beginSpan or clientSpan is not found
             return new Trace(vertices, edges);
         }
@@ -57,12 +56,11 @@ public class TraceService {
         Vertex root = new Vertex(beginSpan.getSpanId(), beginSpan.getLocalEndpoint().getServiceName());
         vertices.add(root);
         spans.remove(beginSpan);
-        spans.remove(clientSpan);
 
-        return createTrace(root, beginSpan, spans, vertices, edges);
+        return createTraceChildren(root, beginSpan, spans, vertices, edges);
     }
 
-    private Trace createTrace(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
+    private Trace createTraceChildren(Vertex parent, Span parentSpan, List<Span> spans, Set<Vertex> vertices, Set<Edge> edges) {
         List<Span> spanList = spans.stream().filter(span -> span.getParentId().equals(parentSpan.getSpanId())).toList();
 
         for (Span childSpan : spanList) {
@@ -101,20 +99,15 @@ public class TraceService {
                 }
             }
             // Vertices and edges are being added by calling this method recursively
-            createTrace(child, childSpan, spans, vertices, edges);
+            createTraceChildren(child, childSpan, spans, vertices, edges);
         }
 
         return new Trace(vertices, edges);
     }
 
-    private List<Trace> getSubTraces(Trace trace, Set<String> methods) {
-        Set<Edge> filteredEdges = new HashSet<>();
+    private List<Trace> cutTraces(Trace trace, Set<String> methods) {
         // Put in all edges were the method equals the given set of allowed methods
-        for (Edge edge : trace.getEdges()) {
-            if (methods.contains(edge.getMethod())) {
-                filteredEdges.add(edge);
-            }
-        }
+        Set<Edge> filteredEdges = trace.getEdges().stream().filter(edge -> methods.contains(edge.getMethod())).collect(Collectors.toSet());
 
         Trace filteredTrace = new Trace(trace.getVertices(), filteredEdges);
 
@@ -125,10 +118,9 @@ public class TraceService {
             // Check if we did not visit the vertex, to overcome overlapping traces
             if (!visitedVertices.contains(vertex)) {
 
-                Trace connectedTrace = dfs(vertex, filteredTrace, visitedVertices, new HashSet<>(), new HashSet<>());
+                Trace connectedTrace = dfs(vertex, filteredTrace.getEdges(), visitedVertices, new HashSet<>(), new HashSet<>());
 
-                // If we want to create a set of read traces we must filter out the vertices where a post request is made, but where only reads or no
-                // database calls are made
+                // If we want to create a set of write traces we must filter out database relationships as result of a read/send relation
                 if (methods.contains(ModelConstants.WRITE_STRING)) {
                     Set<Vertex> readSendVertices = connectedTrace.getEdges().stream().filter(edge -> edge.getMethod().equals(ModelConstants.SEND_READ_STRING)).map(Edge::getTarget).collect(Collectors.toSet());
                     readSendVertices.forEach(vertex1 -> connectedTrace.getEdges().removeIf(edge -> edge.getSource() == vertex1 && edge.getMethod().equals(ModelConstants.DATABASE_NAME)) );
@@ -136,9 +128,11 @@ public class TraceService {
                 }
 
                 // The trace should not exist of only one vertex representing a service (i.e. we check if there are edges to other services)
+                // This is done to decrease the load when calculating the metrics
                 if (connectedTrace.getEdges().stream().anyMatch(edge -> !edge.getMethod().equals(ModelConstants.DATABASE_NAME))) {
                     if(methods.contains(ModelConstants.WRITE_STRING)) {
-                        // If we are creating read traces there must be at least one write relation between services
+                        // If we are creating write traces there must be at least one write relation between services, done
+                        // to decrease the load when calculating the metrics
                         if (connectedTrace.getEdges().stream().anyMatch(edge -> edge.getMethod().equals(ModelConstants.WRITE_STRING))) {
                             connectedGraphs.add(connectedTrace);
                         }
@@ -152,12 +146,12 @@ public class TraceService {
         return connectedGraphs;
     }
 
-    private Trace dfs(Vertex vertex, Trace trace, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
+    private Trace dfs(Vertex vertex, Set<Edge> edges, Set<Vertex> visited, Set<Vertex> connectedVertices, Set<Edge> connectedEdges) {
         visited.add(vertex);
         connectedVertices.add(vertex);
         Trace connectedTrace = new Trace(new HashSet<>(), new HashSet<>());
 
-        for (Edge edge : trace.getEdges()) {
+        for (Edge edge : edges) {
             // If connected, the vertex should be in the source or the target of an edge
             if (edge.getSource().equals(vertex) || edge.getTarget().equals(vertex)) {
                 connectedEdges.add(edge);
@@ -166,7 +160,7 @@ public class TraceService {
                 // If we haven't visited this adjacent vertex, perform DFS on this as well
                 if (!visited.contains(adjacentVertex)) {
                    // Mutate connectedVertices and connectedEdges recursively
-                   dfs(adjacentVertex, trace, visited, connectedVertices, connectedEdges);
+                   dfs(adjacentVertex, edges, visited, connectedVertices, connectedEdges);
                 }
             }
         }

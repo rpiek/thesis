@@ -62,7 +62,7 @@ public class DataDependencyController {
     @PostMapping("/need")
     public @ResponseBody ResponseEntity<Result> calculateDataDependsNeed(@RequestBody List<List<Span>> traces) {
         Model model = traceService.tracesToModel(traces);
-        Result result = new Result(new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+        Result result = new Result(0.0, 0.0, new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
         result.setDataDependsNeedMetrics(dataDependencyService.calculateDataDependsNeedMetrics(model));
 
         return new ResponseEntity<>(result, HttpStatus.OK);
